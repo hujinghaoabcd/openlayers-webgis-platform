@@ -1,14 +1,33 @@
 # 快速开始
 
 ```bash
-pnpm add ol @orbilayer/core @orbilayer/layers @orbilayer/vue
+pnpm add ol @omap/core @omap/layers @omap/vue
 ```
+
+## TypeScript
+
+```ts
+import View from 'ol/View.js';
+import {map} from '@omap/core';
+import {createOsmLayer} from '@omap/layers';
+
+const viewer = map('map', {
+  layers: [createOsmLayer()],
+  view: new View({center: [0, 0], zoom: 2}),
+});
+
+viewer.native.once('rendercomplete', () => {
+  console.log('Map rendered');
+});
+```
+
+## Vue
 
 ```vue
 <script setup lang="ts">
 import View from 'ol/View.js';
-import {OrbiMap} from '@orbilayer/vue';
-import {createOsmLayer} from '@orbilayer/layers';
+import {OMap} from '@omap/vue';
+import {createOsmLayer} from '@omap/layers';
 
 const options = {
   layers: [createOsmLayer()],
@@ -17,6 +36,6 @@ const options = {
 </script>
 
 <template>
-  <OrbiMap :options="options" height="100vh" />
+  <OMap :options="options" height="100vh" />
 </template>
 ```

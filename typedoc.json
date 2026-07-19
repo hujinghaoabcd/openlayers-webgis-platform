@@ -7,7 +7,7 @@
     "packages/analysis/src/index.ts",
     "packages/visualization/src/index.ts",
     "packages/widgets/src/index.ts",
-    "packages/vue/src/useOrbiMap.ts",
+    "packages/vue/src/useMap.ts",
     "packages/config/src/index.ts",
     "packages/controls/src/index.ts",
     "packages/interactions/src/index.ts"

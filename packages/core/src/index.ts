@@ -1,9 +1,4 @@
-export {OrbiMapApp} from './OrbiMapApp.js';
+export {Map} from './Map.js';
+export {map} from './factory.js';
 export {definePlugin} from './plugin.js';
-export type {
-  MapTarget,
-  OrbiLayerContext,
-  OrbiLayerPlugin,
-  OrbiMap,
-  OrbiMapOptions,
-} from './types.js';
+export type {MapOptions, MapTarget, Plugin, PluginContext} from './types.js';

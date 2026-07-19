@@ -1,4 +1,4 @@
-export {default as OrbiMap} from './OrbiMap.vue';
-export {useOrbiMap} from './useOrbiMap.js';
-export type {OrbiMapBinding} from './useOrbiMap.js';
-export type {OrbiMapApp} from '@orbilayer/core';
+export {default as OMap} from './OMap.vue';
+export {useMap} from './useMap.js';
+export type {MapBinding} from './useMap.js';
+export type {Map, MapOptions} from '@omap/core';

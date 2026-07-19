@@ -1,46 +1,47 @@
 <script setup lang="ts">
 import 'ol/ol.css';
 import {onBeforeUnmount, onMounted, ref, shallowRef} from 'vue';
-import {OrbiMapApp, type OrbiMapOptions} from '@orbilayer/core';
+import {Map, type MapOptions} from '@omap/core';
 
 const props = withDefaults(
   defineProps<{
-    options?: Omit<OrbiMapOptions, 'target'>;
+    options?: Omit<MapOptions, 'target'>;
     height?: string;
   }>(),
   {height: '100%'},
 );
 
 const emit = defineEmits<{
-  ready: [app: OrbiMapApp];
+  ready: [map: Map];
 }>();
 
 const target = ref<HTMLDivElement>();
-const app = shallowRef<OrbiMapApp>();
+const map = shallowRef<Map>();
 
 onMounted(() => {
   if (!target.value) {
-    throw new Error('OrbiMap target element is unavailable.');
+    throw new Error('OMap target element is unavailable.');
   }
-  const instance = new OrbiMapApp({...props.options, target: target.value});
-  app.value = instance;
+
+  const instance = new Map({...props.options, target: target.value});
+  map.value = instance;
   emit('ready', instance);
 });
 
 onBeforeUnmount(async () => {
-  await app.value?.dispose();
-  app.value = undefined;
+  await map.value?.remove();
+  map.value = undefined;
 });
 
-defineExpose({app});
+defineExpose({map});
 </script>
 
 <template>
-  <div ref="target" class="orbilayer-map" :style="{height}" />
+  <div ref="target" class="omap-map" :style="{height}" />
 </template>
 
 <style scoped>
-.orbilayer-map {
+.omap-map {
   position: relative;
   width: 100%;
   min-height: 240px;

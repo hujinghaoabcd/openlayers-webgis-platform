@@ -1,5 +1,5 @@
 {
-  "name": "@orbilayer/visualization",
+  "name": "@omap/visualization",
   "version": "0.1.0",
   "type": "module",
   "sideEffects": false,

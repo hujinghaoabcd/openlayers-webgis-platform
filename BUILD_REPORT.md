@@ -1,34 +1,21 @@
-# Phase 0 Build Report
+# Core Foundation Build Report
 
 - Date: 2026-07-20
-- Status: Passed
-- Development codename: OrbiLayer / 寰图
-- Node.js: v22.16.0
-- pnpm: 11.15.0
+- Product: OMap
+- Target runtime: Node.js >= 22.12.0
+- Package manager: pnpm 11.15.0
 
-## Verified commands
+## Current foundation
 
-| Command | Result |
-|---|---|
-| `pnpm install` | Passed; lockfile generated |
-| `pnpm validate` | Passed; workspace structure and metadata validated |
-| `pnpm typecheck` | Passed across SDK packages and Vue applications |
-| `pnpm test` | Passed; core lifecycle and plugin tests |
-| `pnpm docs:api` | Passed; TypeDoc API generated |
-| `pnpm build` | Passed; SDK packages and all sites built for production |
-
-## Implemented foundation
-
-- OpenLayers map lifecycle wrapper with mount, unmount and dispose behavior.
-- Plugin installation and disposal kernel.
-- Versioned map configuration contracts.
+- `Map` class and `map()` factory.
+- Direct access to the underlying OpenLayers map through `map.native`.
+- Direct layer, control, interaction and overlay methods.
+- Map target, view, size and removal lifecycle.
+- Plugin installation, duplicate protection and reverse-order disposal.
 - Base tile, XYZ, WMS and GeoJSON layer factories.
-- Self-developed contracts for controls, interactions, services, analysis, visualization and widgets.
-- Vue 3 map component and map composable.
-- Vue 3 product portal and searchable example application.
-- VitePress tutorial and API site.
-- GitHub Actions workflow, workspace validation and project rename script.
+- Vue 3 `OMap` component and `useMap()` composable.
+- Workspace validation, type checking, tests, API generation and production builds.
 
-## Scope boundary
+## Completion rule
 
-Phase 0 is a verified architecture and runnable foundation. A capability is considered complete only when implementation, public types, tests, runnable example, tutorial or API documentation, and changelog are all present.
+A public capability is complete only when its implementation, exported types, tests, runnable example and API documentation are present.

@@ -1,6 +1,5 @@
 export const projectMeta = {
-  codename: 'OrbiLayer',
-  chineseCodename: '寰图',
-  tagline: 'OpenLayers-based WebGIS platform',
-  status: 'development-codename',
+  name: 'OMap',
+  tagline: 'A modular WebGIS library built on OpenLayers',
+  version: '0.1.0',
 } as const;

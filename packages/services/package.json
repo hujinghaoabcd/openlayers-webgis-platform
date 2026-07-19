@@ -1,5 +1,5 @@
 {
-  "name": "@orbilayer/services",
+  "name": "@omap/services",
   "version": "0.1.0",
   "type": "module",
   "sideEffects": false,

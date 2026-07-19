@@ -1,5 +1,6 @@
-import type {OrbiLayerPlugin} from './types.js';
+import type {Plugin} from './types.js';
 
-export function definePlugin(plugin: OrbiLayerPlugin): OrbiLayerPlugin {
+/** Preserve plugin inference while validating the public plugin contract. */
+export function definePlugin(plugin: Plugin): Plugin {
   return plugin;
 }

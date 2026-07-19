@@ -1,25 +1,31 @@
 {
-  "name": "orbilayer-workspace",
+  "name": "omap-workspace",
   "version": "0.1.0",
   "private": true,
-  "description": "OpenLayers-based WebGIS SDK, Vue sites, examples, documentation, and templates.",
+  "description": "A modular WebGIS library built on OpenLayers.",
   "license": "UNLICENSED",
   "packageManager": "pnpm@11.15.0",
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter @orbilayer/portal --filter @orbilayer/examples --filter @orbilayer/docs dev",
-    "dev:portal": "pnpm --filter @orbilayer/portal dev",
-    "dev:examples": "pnpm --filter @orbilayer/examples dev",
-    "dev:docs": "pnpm --filter @orbilayer/docs dev",
-    "build": "pnpm -r --if-present build",
+    "predev": "pnpm build:packages",
+    "dev": "pnpm --parallel --filter @omap/portal --filter @omap/examples --filter @omap/docs dev",
+    "predev:portal": "pnpm build:packages",
+    "dev:portal": "pnpm --filter @omap/portal dev",
+    "predev:examples": "pnpm build:packages",
+    "dev:examples": "pnpm --filter @omap/examples dev",
+    "predev:docs": "pnpm build:packages && pnpm docs:api",
+    "dev:docs": "pnpm --filter @omap/docs dev",
+    "build": "pnpm build:packages && pnpm docs:api && pnpm build:apps && pnpm build:templates",
+    "build:packages": "pnpm -r --filter './packages/*' --if-present build",
+    "build:apps": "pnpm -r --filter './apps/*' --if-present build",
+    "build:templates": "pnpm -r --filter './templates/*' --if-present build",
     "typecheck": "pnpm build:packages && pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint",
     "docs:api": "typedoc",
-    "validate": "node scripts/validate-workspace.mjs",
-    "build:packages": "pnpm --filter './packages/**' -r --if-present build"
+    "validate": "node scripts/validate-workspace.mjs"
   },
   "devDependencies": {
     "@types/geojson": "^7946.0.16",

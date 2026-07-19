@@ -1,6 +1,20 @@
-# 插件边界
+# 插件
 
-一个插件必须声明唯一名称，并实现安装与可选销毁逻辑。插件不得隐式修改全局对象，其资源、监听器和界面副作用必须在 `dispose` 中完整回收。
+插件必须声明唯一 `id`，并实现安装逻辑。插件创建的监听器、图层、控件和其他资源应在可选的 `dispose` 方法中完整释放。
+
+```ts
+import {definePlugin} from '@omap/core';
+
+export const samplePlugin = definePlugin({
+  id: 'sample',
+  install({map, native}) {
+    native.set('pluginOwner', map);
+  },
+  dispose({native}) {
+    native.unset('pluginOwner');
+  },
+});
+```
 
 适合插件化的能力包括：
 
