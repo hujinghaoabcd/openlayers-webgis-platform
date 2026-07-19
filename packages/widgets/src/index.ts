@@ -1,10 +1,10 @@
-import type {OrbiLayerContext} from '@orbilayer/core';
+import type {PluginContext} from '@omap/core';
 
 export interface WidgetDefinition<TOptions = unknown> {
   readonly id: string;
   readonly title: string;
   readonly group?: string;
-  mount(context: OrbiLayerContext, options: TOptions): void | Promise<void>;
+  mount(context: PluginContext, options: TOptions): void | Promise<void>;
   unmount(): void | Promise<void>;
 }
 

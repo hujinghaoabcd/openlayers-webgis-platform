@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {projectMeta} from '@orbilayer/project-meta';
+import {projectMeta} from '@omap/project-meta';
 const capabilities = [
   ['地图内核', 'OpenLayers 原生兼容、配置驱动、插件生命周期、多地图协同'],
   ['数据与服务', '多源地图、标准服务、空间数据、实时数据与统一请求管线'],
@@ -13,7 +13,7 @@ const capabilities = [
 <template>
   <main>
     <header class="hero">
-      <nav><strong>{{ projectMeta.codename }}</strong><span>{{ projectMeta.chineseCodename }} WebGIS SDK</span></nav>
+      <nav><strong>{{ projectMeta.name }}</strong><span>{{ projectMeta.tagline }}</span></nav>
       <section>
         <p class="eyebrow">OPENLAYERS · TYPESCRIPT · VUE 3</p>
         <h1>面向完整 WebGIS 产品的二维地图开发平台</h1>

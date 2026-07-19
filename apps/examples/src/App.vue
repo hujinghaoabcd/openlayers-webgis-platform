@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed, ref} from 'vue';
-import {projectMeta} from '@orbilayer/project-meta';
+import {projectMeta} from '@omap/project-meta';
 import BasicMap from './examples/BasicMap.vue';
 import PlannedExample from './examples/PlannedExample.vue';
 import {exampleCatalog} from './catalog';
@@ -18,7 +18,7 @@ const filtered = computed(() => {
 
 <template>
   <div class="shell">
-    <header><strong>{{ projectMeta.codename }} Examples</strong><input v-model="query" placeholder="搜索示例、类别或标签" /></header>
+    <header><strong>{{ projectMeta.name }} Examples</strong><input v-model="query" placeholder="搜索示例、类别或标签" /></header>
     <aside>
       <button v-for="item in filtered" :key="item.id" :class="{active:item.id===selectedId}" @click="selectedId=item.id">
         <small>{{ item.category }}</small><span>{{ item.title }}</span>

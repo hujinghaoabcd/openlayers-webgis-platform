@@ -1,23 +1,23 @@
-# GitHub 同步说明
+# GitHub 工作流
 
-仓库名称尚未确定，因此当前只初始化本地 Git 历史，不绑定远程地址。
+远程仓库：`hujinghaoabcd/openlayers-webgis-platform`
 
-用户创建 GitHub 空仓库后，在项目根目录执行：
+日常开发建议从 `main` 创建功能分支，通过 Pull Request 合并：
 
 ```bash
-git remote add origin git@github.com:<OWNER>/<REPOSITORY>.git
-git push -u origin main
+git switch main
+git pull
+git switch -c feature/core-map
+git add .
+git commit -m "feat: add core map API"
+git push -u origin feature/core-map
 ```
 
-若使用 HTTPS：
+合并前运行：
 
 ```bash
-git remote add origin https://github.com/<OWNER>/<REPOSITORY>.git
-git push -u origin main
-```
-
-正式命名前，先运行项目更名脚本，再创建远程仓库：
-
-```bash
-node scripts/rename-project.mjs --name NewName --scope new-scope --chinese 中文名
+pnpm validate
+pnpm typecheck
+pnpm test
+pnpm build
 ```

@@ -1,5 +1,5 @@
 {
-  "name": "@orbilayer/project-meta",
+  "name": "@omap/project-meta",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -8,5 +8,5 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "description": "Centralized codename and site metadata; replaced when the final product name is chosen."
+  "description": "Shared OMap product metadata for workspace applications."
 }

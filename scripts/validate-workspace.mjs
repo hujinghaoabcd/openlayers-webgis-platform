@@ -1,5 +1,5 @@
 import {existsSync, readFileSync, readdirSync, statSync} from 'node:fs';
-import {join, relative, resolve} from 'node:path';
+import {join, resolve} from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const required = [
@@ -12,7 +12,7 @@ const required = [
   'packages/config/src/index.ts',
   'packages/controls/src/index.ts',
   'packages/interactions/src/index.ts',
-  'packages/vue/src/OrbiMap.vue',
+  'packages/vue/src/OMap.vue',
   'docs/FEATURES.md',
   '.github/workflows/ci.yml',
 ];

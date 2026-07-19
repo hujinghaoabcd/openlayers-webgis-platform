@@ -7,13 +7,13 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
-    "@orbilayer/core": "workspace:*",
-    "@orbilayer/layers": "workspace:*",
-    "@orbilayer/vue": "workspace:*",
+    "@omap/core": "workspace:*",
+    "@omap/layers": "workspace:*",
+    "@omap/vue": "workspace:*",
     "ol": "^10.9.0",
     "vue": "^3.5.40",
     "vue-router": "^4.6.0",
-    "@orbilayer/project-meta": "workspace:*"
+    "@omap/project-meta": "workspace:*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.0",
@@ -21,5 +21,5 @@
     "vite": "^8.1.5",
     "vue-tsc": "^3.0.0"
   },
-  "name": "@orbilayer/portal"
+  "name": "@omap/portal"
 }

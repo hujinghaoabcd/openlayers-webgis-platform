@@ -1,4 +1,4 @@
-import type {ExampleDefinition} from '@orbilayer/example-kit';
+import type {ExampleDefinition} from '@omap/example-kit';
 
 export const exampleCatalog: ExampleDefinition[] = [
   {

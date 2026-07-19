@@ -1,7 +1,7 @@
 # 项目目录规划
 
 ```text
-orbilayer-workspace/
+omap-workspace/
 ├─ apps/
 │  ├─ portal/                 # Vue 3 产品介绍门户
 │  ├─ examples/               # Vue 3 开发示例站
