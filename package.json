@@ -1,0 +1,31 @@
+{
+  "name": "orbilayer-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenLayers-based WebGIS SDK, Vue sites, examples, documentation, and templates.",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@11.15.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @orbilayer/portal --filter @orbilayer/examples --filter @orbilayer/docs dev",
+    "dev:portal": "pnpm --filter @orbilayer/portal dev",
+    "dev:examples": "pnpm --filter @orbilayer/examples dev",
+    "dev:docs": "pnpm --filter @orbilayer/docs dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm build:packages && pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint",
+    "docs:api": "typedoc",
+    "validate": "node scripts/validate-workspace.mjs",
+    "build:packages": "pnpm --filter './packages/**' -r --if-present build"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^26.0.1",
+    "typedoc": "^0.28.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  }
+}

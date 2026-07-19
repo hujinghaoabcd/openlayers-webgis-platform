@@ -1,0 +1,12 @@
+{
+  "name": "@orbilayer/project-meta",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "description": "Centralized codename and site metadata; replaced when the final product name is chosen."
+}
