@@ -6,19 +6,32 @@ import type Interaction from 'ol/interaction/Interaction.js';
 import {defaults as defaultInteractions} from 'ol/interaction/defaults.js';
 import type BaseLayer from 'ol/layer/Base.js';
 import type Overlay from 'ol/Overlay.js';
-import type {MapOptions, MapTarget, Plugin, PluginContext} from './types.js';
+import {Events, type EventListener} from './events.js';
+import {Registry} from './Registry.js';
+import {Scope} from './Scope.js';
+import type {MapEventMap, MapOptions, MapTarget, Plugin, PluginContext} from './types.js';
+
+interface InstalledPlugin {
+  readonly plugin: Plugin;
+  readonly scope: Scope;
+}
 
 /**
  * The primary OMap map object.
  *
- * OMap adds a small lifecycle and plugin layer while keeping the underlying
- * OpenLayers map available through {@link native}.
+ * OMap adds a concise lifecycle, events, scopes, registry and plugins while
+ * keeping the underlying OpenLayers map available through {@link native}.
  */
 export class Map {
   /** The underlying OpenLayers map. */
   public readonly native: OlMap;
 
-  private readonly plugins = new globalThis.Map<string, Plugin>();
+  /** Shared registry for named factories and runtime capabilities. */
+  public readonly registry = new Registry();
+
+  private readonly events = new Events<MapEventMap>();
+  private readonly plugins = new globalThis.Map<string, InstalledPlugin>();
+  private readonly scopes = new Set<Scope>();
   private removed = false;
 
   public constructor(options: MapOptions = {}) {
@@ -32,6 +45,49 @@ export class Map {
     });
   }
 
+  /** Register a typed map event listener. */
+  public on<K extends keyof MapEventMap>(type: K, listener: EventListener<MapEventMap[K]>): this {
+    this.events.on(type, listener);
+    return this;
+  }
+
+  /** Register a typed listener that runs once. */
+  public once<K extends keyof MapEventMap>(type: K, listener: EventListener<MapEventMap[K]>): this {
+    this.events.once(type, listener);
+    return this;
+  }
+
+  /** Remove map event listeners. */
+  public off(): this;
+  public off<K extends keyof MapEventMap>(type: K): this;
+  public off<K extends keyof MapEventMap>(type: K, listener: EventListener<MapEventMap[K]>): this;
+  public off<K extends keyof MapEventMap>(
+    type?: K,
+    listener?: EventListener<MapEventMap[K]>,
+  ): this {
+    if (type === undefined) {
+      this.events.off();
+    } else if (listener === undefined) {
+      this.events.off(type);
+    } else {
+      this.events.off(type, listener);
+    }
+    return this;
+  }
+
+  /** Create a resource scope that is also disposed with the map. */
+  public scope(name?: string): Scope {
+    this.assertActive();
+    const scope = new Scope(this, name, disposedScope => {
+      if (this.scopes.delete(disposedScope)) {
+        this.events.emit('scope:dispose', {scope: disposedScope});
+      }
+    });
+    this.scopes.add(scope);
+    this.events.emit('scope:create', {scope});
+    return scope;
+  }
+
   /** Set or clear the map target. */
   public setTarget(target?: MapTarget): this {
     this.assertActive();
@@ -39,6 +95,7 @@ export class Map {
     if (target !== undefined) {
       this.native.updateSize();
     }
+    this.events.emit('target:change', {target});
     return this;
   }
 
@@ -55,7 +112,9 @@ export class Map {
   /** Replace the map view. */
   public setView(view: View): this {
     this.assertActive();
+    const previous = this.native.getView();
     this.native.setView(view);
+    this.events.emit('view:change', {view, previous});
     return this;
   }
 
@@ -63,63 +122,104 @@ export class Map {
   public addLayer(layer: BaseLayer): this {
     this.assertActive();
     this.native.addLayer(layer);
+    this.events.emit('layer:add', {layer});
     return this;
   }
 
   /** Remove a layer from the map. */
   public removeLayer(layer: BaseLayer): BaseLayer | undefined {
     this.assertActive();
-    return this.native.removeLayer(layer);
+    const removed = this.native.removeLayer(layer);
+    if (removed) {
+      this.events.emit('layer:remove', {layer: removed});
+    }
+    return removed;
   }
 
   /** Add a control to the map. */
   public addControl(control: Control): this {
     this.assertActive();
     this.native.addControl(control);
+    this.events.emit('control:add', {control});
     return this;
   }
 
   /** Remove a control from the map. */
   public removeControl(control: Control): Control | undefined {
     this.assertActive();
-    return this.native.removeControl(control);
+    const removed = this.native.removeControl(control);
+    if (removed) {
+      this.events.emit('control:remove', {control: removed});
+    }
+    return removed;
   }
 
   /** Add an interaction to the map. */
   public addInteraction(interaction: Interaction): this {
     this.assertActive();
     this.native.addInteraction(interaction);
+    this.events.emit('interaction:add', {interaction});
     return this;
   }
 
   /** Remove an interaction from the map. */
   public removeInteraction(interaction: Interaction): Interaction | undefined {
     this.assertActive();
-    return this.native.removeInteraction(interaction);
+    const removed = this.native.removeInteraction(interaction);
+    if (removed) {
+      this.events.emit('interaction:remove', {interaction: removed});
+    }
+    return removed;
   }
 
   /** Add an overlay to the map. */
   public addOverlay(overlay: Overlay): this {
     this.assertActive();
     this.native.addOverlay(overlay);
+    this.events.emit('overlay:add', {overlay});
     return this;
   }
 
   /** Remove an overlay from the map. */
   public removeOverlay(overlay: Overlay): Overlay | undefined {
     this.assertActive();
-    return this.native.removeOverlay(overlay);
+    const removed = this.native.removeOverlay(overlay);
+    if (removed) {
+      this.events.emit('overlay:remove', {overlay: removed});
+    }
+    return removed;
   }
 
-  /** Install a plugin once. */
+  /**
+   * Install a plugin once.
+   *
+   * Every plugin receives its own scope. A failed installation automatically
+   * disposes resources already registered by that plugin.
+   */
   public async use(plugin: Plugin): Promise<this> {
     this.assertActive();
     if (this.plugins.has(plugin.id)) {
       return this;
     }
 
-    await plugin.install(this.createPluginContext());
-    this.plugins.set(plugin.id, plugin);
+    const scope = this.scope(`plugin:${plugin.id}`);
+    const context = this.createPluginContext(scope);
+    try {
+      await plugin.install(context);
+    } catch (installError) {
+      try {
+        await scope.dispose();
+      } catch (cleanupError) {
+        throw new AggregateError(
+          [installError, cleanupError],
+          `Plugin installation and rollback failed: ${plugin.id}`,
+        );
+      }
+      throw installError;
+    }
+
+    this.plugins.set(plugin.id, {plugin, scope});
+    this.events.emit('plugin:install', {plugin});
     return this;
   }
 
@@ -135,21 +235,57 @@ export class Map {
     return this;
   }
 
-  /** Remove the map and release plugins and OpenLayers resources. */
+  /** Remove the map and release plugins, scopes and OpenLayers resources. */
   public async remove(): Promise<void> {
     if (this.removed) {
       return;
     }
 
-    const context = this.createPluginContext();
-    for (const plugin of [...this.plugins.values()].reverse()) {
-      await plugin.dispose?.(context);
+    const errors: unknown[] = [];
+    for (const installed of [...this.plugins.values()].reverse()) {
+      const context = this.createPluginContext(installed.scope);
+      try {
+        await installed.plugin.dispose?.(context);
+      } catch (error) {
+        errors.push(error);
+      }
+
+      try {
+        await installed.scope.dispose();
+      } catch (error) {
+        errors.push(error);
+      }
+      try {
+        this.events.emit('plugin:dispose', {plugin: installed.plugin});
+      } catch (error) {
+        errors.push(error);
+      }
+    }
+    this.plugins.clear();
+
+    for (const scope of [...this.scopes].reverse()) {
+      try {
+        await scope.dispose();
+      } catch (error) {
+        errors.push(error);
+      }
     }
 
-    this.plugins.clear();
+    this.registry.clear();
     this.native.setTarget(undefined);
     this.native.dispose();
     this.removed = true;
+    try {
+      this.events.emit('remove', {map: this});
+    } catch (error) {
+      errors.push(error);
+    } finally {
+      this.events.off();
+    }
+
+    if (errors.length > 0) {
+      throw new AggregateError(errors, 'Failed to remove all OMap resources cleanly.');
+    }
   }
 
   /** Return whether the map has been removed. */
@@ -157,8 +293,8 @@ export class Map {
     return this.removed;
   }
 
-  private createPluginContext(): PluginContext {
-    return {map: this, native: this.native};
+  private createPluginContext(scope: Scope): PluginContext {
+    return {map: this, native: this.native, scope, registry: this.registry};
   }
 
   private assertActive(): void {

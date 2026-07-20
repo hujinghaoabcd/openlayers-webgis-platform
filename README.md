@@ -47,14 +47,21 @@ const viewer = map('map', {
   view: new View({center: [0, 0], zoom: 2}),
 });
 
-viewer.addLayer(layer);
+viewer.on('layer:add', ({layer}) => {
+  console.log(layer);
+});
+
+const scope = viewer.scope('example');
+scope.addLayer(layer);
+viewer.registry.register('layer', 'example', () => layer);
+
 viewer.native.renderSync();
 await viewer.remove();
 ```
 
 ## 仓库入口
 
-- `packages/core`：`Map`、`map()`、生命周期和插件内核
+- `packages/core`：`Map`、`map()`、事件、Scope、Registry 和插件内核
 - `packages/config`：版本化配置契约与校验
 - `packages/layers`：图层、数据源、格式和样式能力
 - `packages/controls`：地图控件与工具条能力
