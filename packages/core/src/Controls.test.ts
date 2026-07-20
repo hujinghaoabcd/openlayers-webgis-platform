@@ -1,5 +1,6 @@
 import Control from 'ol/control/Control.js';
 import {describe, expect, it, vi} from 'vitest';
+import {getControlElement} from './Controls.js';
 import {Map} from './Map.js';
 
 function createControl(): Control {
@@ -43,6 +44,7 @@ describe('Controls', () => {
   it('enables and disables controls without removing them', async () => {
     const map = new Map({controls: []});
     const control = createControl();
+    const element = getControlElement(control);
     const enabled = vi.fn();
 
     map.addControl(control, {id: 'mouse-position'});
@@ -51,7 +53,7 @@ describe('Controls', () => {
 
     expect(map.hasControl('mouse-position')).toBe(true);
     expect(map.controls.isEnabled('mouse-position')).toBe(false);
-    expect(control.element.hidden).toBe(true);
+    expect(element.hidden).toBe(true);
     expect(enabled).toHaveBeenCalledWith({
       control,
       id: 'mouse-position',
@@ -59,7 +61,7 @@ describe('Controls', () => {
     });
 
     map.enableControl('mouse-position');
-    expect(control.element.hidden).toBe(false);
+    expect(element.hidden).toBe(false);
     expect(map.controls.isEnabled('mouse-position')).toBe(true);
 
     await map.remove();
@@ -68,6 +70,7 @@ describe('Controls', () => {
   it('applies metadata and logical position classes', async () => {
     const map = new Map({controls: []});
     const control = createControl();
+    const element = getControlElement(control);
 
     map.addControl(control, {
       id: 'scale-line',
@@ -83,13 +86,13 @@ describe('Controls', () => {
       position: 'bottom-left',
       enabled: true,
     });
-    expect(control.element.dataset.omapControlId).toBe('scale-line');
-    expect(control.element.dataset.omapControlPosition).toBe('bottom-left');
-    expect(control.element.classList.contains('omap-control-position-bottom-left')).toBe(true);
+    expect(element.dataset.omapControlId).toBe('scale-line');
+    expect(element.dataset.omapControlPosition).toBe('bottom-left');
+    expect(element.classList.contains('omap-control-position-bottom-left')).toBe(true);
 
     map.controls.update('scale-line', {position: 'top-right'});
-    expect(control.element.classList.contains('omap-control-position-bottom-left')).toBe(false);
-    expect(control.element.classList.contains('omap-control-position-top-right')).toBe(true);
+    expect(element.classList.contains('omap-control-position-bottom-left')).toBe(false);
+    expect(element.classList.contains('omap-control-position-top-right')).toBe(true);
 
     await map.remove();
   });
