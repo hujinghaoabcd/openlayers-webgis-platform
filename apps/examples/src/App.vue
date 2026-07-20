@@ -4,6 +4,7 @@ import {projectMeta} from '@omap/project-meta';
 import BasicMap from './examples/BasicMap.vue';
 import ControlManagement from './examples/ControlManagement.vue';
 import CoreRuntime from './examples/CoreRuntime.vue';
+import InteractionManagement from './examples/InteractionManagement.vue';
 import LayerManagement from './examples/LayerManagement.vue';
 import LayerSources from './examples/LayerSources.vue';
 import PlannedExample from './examples/PlannedExample.vue';
@@ -36,6 +37,7 @@ const filtered = computed(() => {
         <LayerManagement v-else-if="selected.id==='layer-management'" />
         <LayerSources v-else-if="selected.id==='layer-sources'" />
         <ControlManagement v-else-if="selected.id==='control-management'" />
+        <InteractionManagement v-else-if="selected.id==='interaction-management'" />
         <PlannedExample v-else :title="selected.title" :description="selected.description" />
       </section>
     </main>
