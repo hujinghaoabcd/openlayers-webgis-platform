@@ -19,13 +19,13 @@ jobs:
         with:
           node-version: 22
       - run: node scripts/patch-map-overlays.mjs
-      - name: Commit generated core wiring
+      - name: Commit generated overlay fix
         run: |
           if git diff --quiet; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add packages/core/src/Map.ts
-          git commit -m "feat: wire managed overlays into map"
+          git add packages/core/src/Overlays.ts
+          git commit -m "fix: satisfy strict overlay metadata typing"
           git push
