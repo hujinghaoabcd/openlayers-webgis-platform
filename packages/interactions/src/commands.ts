@@ -187,7 +187,8 @@ export function bindFeatureHistory(options: BindFeatureHistoryOptions): () => vo
 function normalizeFeatures(
   features: EditableFeature | readonly EditableFeature[],
 ): readonly EditableFeature[] {
-  return Array.isArray(features) ? [...features] : [features];
+  if (Array.isArray(features)) return [...features];
+  return [features as EditableFeature];
 }
 
 function hasFeature(source: VectorSource<EditableFeature>, feature: EditableFeature): boolean {
