@@ -6,6 +6,7 @@ export {
   getControlId,
 } from './Controls.js';
 export {Events} from './events.js';
+export {History} from './History.js';
 export {Map} from './Map.js';
 export {map} from './factory.js';
 export {definePlugin} from './plugin.js';
@@ -32,6 +33,14 @@ export {
   Interactions,
 } from './Interactions.js';
 export type {EventListener, EventName} from './events.js';
+export type {
+  Command,
+  HistoryAction,
+  HistoryEntry,
+  HistoryEventMap,
+  HistoryOptions,
+  HistoryState,
+} from './History.js';
 export type {
   InteractionInfo,
   InteractionMetadata,
