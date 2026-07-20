@@ -26,3 +26,8 @@
 - Typed command-history execution, recording, state-change and error events.
 - Reversible feature add, remove and geometry snapshot commands.
 - Native Draw, Modify and Translate history recording through `bindFeatureHistory()`.
+- Managed `map.overlays` collection with stable IDs, metadata, visibility, position, offset, element and ordering operations.
+- Typed overlay lifecycle, visibility, position, offset, positioning, element, metadata and order events.
+- Framework-independent Popup and Marker controllers backed by native OpenLayers overlays.
+- Safe popup text and DOM-node content handling, close lifecycle and viewport auto-pan.
+- Feature-to-overlay anchor coordinates for point, line, polygon, circle and fallback geometries.
