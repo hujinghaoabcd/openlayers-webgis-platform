@@ -40,10 +40,14 @@ describe('Interactions', () => {
 
   it('activates and deactivates interactions with typed events', async () => {
     const map = new Map({controls: [], interactions: []});
-    const interaction = new TestInteraction({active: false});
+    const interaction = new TestInteraction();
     const active = vi.fn();
 
-    map.addInteraction(interaction, {id: 'select', group: 'tools'});
+    map.addInteraction(interaction, {
+      id: 'select',
+      group: 'tools',
+      active: false,
+    });
     map.on('interaction:active', active);
     map.activateInteraction('select');
 
@@ -63,11 +67,11 @@ describe('Interactions', () => {
 
   it('enforces one active interaction per exclusive group', async () => {
     const map = new Map({controls: [], interactions: []});
-    const draw = new TestInteraction({active: false});
-    const modify = new TestInteraction({active: false});
+    const draw = new TestInteraction();
+    const modify = new TestInteraction();
 
-    map.addInteraction(draw, {id: 'draw', group: 'editing'});
-    map.addInteraction(modify, {id: 'modify', group: 'editing'});
+    map.addInteraction(draw, {id: 'draw', group: 'editing', active: false});
+    map.addInteraction(modify, {id: 'modify', group: 'editing', active: false});
 
     map.activateInteraction('draw');
     expect(map.interactions.current('editing')).toBe(draw);
