@@ -4,6 +4,7 @@ import type Control from 'ol/control/Control.js';
 import type Interaction from 'ol/interaction/Interaction.js';
 import type BaseLayer from 'ol/layer/Base.js';
 import type Overlay from 'ol/Overlay.js';
+import type {LayersEventMap} from './Layers.js';
 import type {Map as OMap} from './Map.js';
 import type {Registry} from './Registry.js';
 import type {Scope} from './Scope.js';
@@ -27,6 +28,12 @@ export interface MapEventMap {
   'view:change': {readonly view: View; readonly previous: View};
   'layer:add': {readonly layer: BaseLayer};
   'layer:remove': {readonly layer: BaseLayer};
+  'layer:visibility': LayersEventMap['visibility'];
+  'layer:opacity': LayersEventMap['opacity'];
+  'layer:zIndex': LayersEventMap['zIndex'];
+  'layer:order': LayersEventMap['order'];
+  'layer:metadata': LayersEventMap['metadata'];
+  'basemap:change': LayersEventMap['basemap'];
   'control:add': {readonly control: Control};
   'control:remove': {readonly control: Control};
   'interaction:add': {readonly interaction: Interaction};
@@ -42,22 +49,15 @@ export interface MapEventMap {
 
 /** Runtime values exposed to an OMap plugin. */
 export interface PluginContext {
-  /** OMap's public map instance. */
   readonly map: OMap;
-  /** The underlying OpenLayers map. */
   readonly native: OlMap;
-  /** Resources owned by this plugin. */
   readonly scope: Scope;
-  /** Shared runtime registry. */
   readonly registry: Registry;
 }
 
 /** Extension contract for reusable OMap functionality. */
 export interface Plugin {
-  /** Unique plugin identifier. */
   readonly id: string;
-  /** Install the plugin once for the target map. */
   install(context: PluginContext): void | Promise<void>;
-  /** Release resources created by the plugin before its scope is disposed. */
   dispose?(context: PluginContext): void | Promise<void>;
 }

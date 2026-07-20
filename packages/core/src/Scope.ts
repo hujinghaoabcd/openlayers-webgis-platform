@@ -5,6 +5,7 @@ import type Interaction from 'ol/interaction/Interaction.js';
 import type BaseLayer from 'ol/layer/Base.js';
 import type Overlay from 'ol/Overlay.js';
 import type {EventListener} from './events.js';
+import type {LayerOptions} from './Layers.js';
 import type {Map} from './Map.js';
 import type {Registry, RegistryEventMap} from './Registry.js';
 import type {MapEventMap} from './types.js';
@@ -12,15 +13,9 @@ import type {MapEventMap} from './types.js';
 /** A synchronous or asynchronous resource cleanup callback. */
 export type Cleanup = () => void | Promise<void>;
 
-/**
- * Owns resources that should be released together.
- *
- * Scopes are disposed automatically when their parent map is removed.
- */
+/** Owns resources that should be released together. */
 export class Scope {
-  /** Optional descriptive scope name. */
   public readonly name: string | undefined;
-
   private readonly cleanups: Cleanup[] = [];
   private disposed = false;
 
@@ -40,9 +35,9 @@ export class Scope {
   }
 
   /** Add a layer and remove it automatically with the scope. */
-  public addLayer<TLayer extends BaseLayer>(layer: TLayer): TLayer {
+  public addLayer<TLayer extends BaseLayer>(layer: TLayer, options: LayerOptions = {}): TLayer {
     this.assertActive();
-    this.map.addLayer(layer);
+    this.map.addLayer(layer, options);
     this.add(() => {
       this.map.removeLayer(layer);
     });
@@ -119,9 +114,7 @@ export class Scope {
 
   /** Dispose all owned resources in reverse registration order. */
   public async dispose(): Promise<void> {
-    if (this.disposed) {
-      return;
-    }
+    if (this.disposed) return;
 
     this.disposed = true;
     const errors: unknown[] = [];
@@ -146,8 +139,6 @@ export class Scope {
   }
 
   private assertActive(): void {
-    if (this.disposed) {
-      throw new Error('Scope has already been disposed.');
-    }
+    if (this.disposed) throw new Error('Scope has already been disposed.');
   }
 }
