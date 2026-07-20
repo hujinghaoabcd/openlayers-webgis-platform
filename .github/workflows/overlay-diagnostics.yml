@@ -22,10 +22,12 @@ jobs:
       - name: Capture diagnostics
         run: |
           pnpm typecheck > overlay-typecheck.txt 2>&1 || true
-          pnpm --filter @omap/core test > overlay-tests.txt 2>&1 || true
+          pnpm --filter @omap/core test > overlay-core-tests.txt 2>&1 || true
+          pnpm --filter @omap/widgets test > overlay-widget-tests.txt 2>&1 || true
       - uses: actions/upload-artifact@v4
         with:
           name: overlay-diagnostics
           path: |
             overlay-typecheck.txt
-            overlay-tests.txt
+            overlay-core-tests.txt
+            overlay-widget-tests.txt
