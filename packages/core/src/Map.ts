@@ -8,6 +8,7 @@ import type BaseLayer from 'ol/layer/Base.js';
 import type Overlay from 'ol/Overlay.js';
 import {Controls, type ControlOptions} from './Controls.js';
 import {Events, type EventListener} from './events.js';
+import {Interactions, type InteractionOptions} from './Interactions.js';
 import {Layers, type LayerOptions} from './Layers.js';
 import {Registry} from './Registry.js';
 import {Scope} from './Scope.js';
@@ -22,8 +23,8 @@ interface InstalledPlugin {
 /**
  * The primary OMap map object.
  *
- * OMap adds a concise lifecycle, events, managed layers, sources and controls,
- * scopes, registry and plugins while keeping the underlying OpenLayers map
+ * OMap adds a concise lifecycle, events, managed layers, sources, controls and
+ * interactions, scopes, registry and plugins while keeping the underlying OpenLayers map
  * available through {@link native}.
  */
 export class Map {
@@ -38,6 +39,9 @@ export class Map {
 
   /** Managed control collection backed by the native OpenLayers collection. */
   public readonly controls: Controls;
+
+  /** Managed interaction collection backed by the native OpenLayers collection. */
+  public readonly interactions: Interactions;
 
   /** Shared registry for named factories and runtime capabilities. */
   public readonly registry = new Registry();
@@ -59,9 +63,11 @@ export class Map {
     this.layers = new Layers(this.native);
     this.sources = new Sources(this.native, this.layers);
     this.controls = new Controls(this.native);
+    this.interactions = new Interactions(this.native);
     this.bindLayerEvents();
     this.bindSourceEvents();
     this.bindControlEvents();
+    this.bindInteractionEvents();
   }
 
   /** Register a typed map event listener. */
@@ -225,20 +231,41 @@ export class Map {
     return this;
   }
 
-  /** Add an interaction to the map. */
-  public addInteraction(interaction: Interaction): this {
+  /** Add an interaction through the managed interaction collection. */
+  public addInteraction(interaction: Interaction, options: InteractionOptions = {}): this {
     this.assertActive();
-    this.native.addInteraction(interaction);
-    this.events.emit('interaction:add', {interaction});
+    this.interactions.add(interaction, options);
     return this;
   }
 
-  /** Remove an interaction from the map. */
-  public removeInteraction(interaction: Interaction): Interaction | undefined {
+  /** Remove an interaction by object or stable id. */
+  public removeInteraction(interactionOrId: Interaction | string): Interaction | undefined {
     this.assertActive();
-    const removed = this.native.removeInteraction(interaction);
-    if (removed) this.events.emit('interaction:remove', {interaction: removed});
-    return removed;
+    return this.interactions.remove(interactionOrId);
+  }
+
+  /** Return a managed interaction by stable id. */
+  public getInteraction<TInteraction extends Interaction = Interaction>(
+    id: string,
+  ): TInteraction | undefined {
+    return this.interactions.get<TInteraction>(id);
+  }
+
+  /** Return whether a managed interaction id or object exists. */
+  public hasInteraction(interactionOrId: Interaction | string): boolean {
+    return this.interactions.has(interactionOrId);
+  }
+
+  /** Activate a managed interaction and deactivate peers in the same group. */
+  public activateInteraction(interactionOrId: Interaction | string): this {
+    this.interactions.activate(interactionOrId);
+    return this;
+  }
+
+  /** Deactivate a managed interaction without removing it. */
+  public deactivateInteraction(interactionOrId: Interaction | string): this {
+    this.interactions.deactivate(interactionOrId);
+    return this;
   }
 
   /** Add an overlay to the map. */
@@ -329,6 +356,7 @@ export class Map {
     }
 
     this.registry.clear();
+    this.interactions.destroy();
     this.controls.destroy();
     this.sources.destroy();
     this.layers.destroy();
@@ -378,6 +406,14 @@ export class Map {
     this.controls.on('enabled', event => this.events.emit('control:enabled', event));
     this.controls.on('order', event => this.events.emit('control:order', event));
     this.controls.on('metadata', event => this.events.emit('control:metadata', event));
+  }
+
+  private bindInteractionEvents(): void {
+    this.interactions.on('add', event => this.events.emit('interaction:add', event));
+    this.interactions.on('remove', event => this.events.emit('interaction:remove', event));
+    this.interactions.on('active', event => this.events.emit('interaction:active', event));
+    this.interactions.on('order', event => this.events.emit('interaction:order', event));
+    this.interactions.on('metadata', event => this.events.emit('interaction:metadata', event));
   }
 
   private createPluginContext(scope: Scope): PluginContext {
