@@ -11,6 +11,7 @@ import {Events, type EventListener} from './events.js';
 import {History, type Command} from './History.js';
 import {Interactions, type InteractionOptions} from './Interactions.js';
 import {Layers, type LayerOptions} from './Layers.js';
+import {Overlays, type ManagedOverlayOptions} from './Overlays.js';
 import {Registry} from './Registry.js';
 import {Scope} from './Scope.js';
 import {Sources, type LayerFitOptions} from './Sources.js';
@@ -44,6 +45,9 @@ export class Map {
   /** Managed interaction collection backed by the native OpenLayers collection. */
   public readonly interactions: Interactions;
 
+  /** Managed overlay collection backed by the native OpenLayers collection. */
+  public readonly overlays: Overlays;
+
   /** Reversible command history for editing and application actions. */
   public readonly history: History;
 
@@ -68,11 +72,13 @@ export class Map {
     this.sources = new Sources(this.native, this.layers);
     this.controls = new Controls(this.native);
     this.interactions = new Interactions(this.native);
+    this.overlays = new Overlays(this.native);
     this.history = new History(options.history);
     this.bindLayerEvents();
     this.bindSourceEvents();
     this.bindControlEvents();
     this.bindInteractionEvents();
+    this.bindOverlayEvents();
     this.bindHistoryEvents();
   }
 
@@ -292,20 +298,57 @@ export class Map {
     return this.history.redo();
   }
 
-  /** Add an overlay to the map. */
-  public addOverlay(overlay: Overlay): this {
+  /** Add an overlay through the managed overlay collection. */
+  public addOverlay(overlay: Overlay, options: ManagedOverlayOptions = {}): this {
     this.assertActive();
-    this.native.addOverlay(overlay);
-    this.events.emit('overlay:add', {overlay});
+    this.overlays.add(overlay, options);
     return this;
   }
 
-  /** Remove an overlay from the map. */
-  public removeOverlay(overlay: Overlay): Overlay | undefined {
+  /** Remove an overlay by object or stable id. */
+  public removeOverlay(overlayOrId: Overlay | string): Overlay | undefined {
     this.assertActive();
-    const removed = this.native.removeOverlay(overlay);
-    if (removed) this.events.emit('overlay:remove', {overlay: removed});
-    return removed;
+    return this.overlays.remove(overlayOrId);
+  }
+
+  /** Return a managed overlay by stable id. */
+  public getOverlay<TOverlay extends Overlay = Overlay>(id: string): TOverlay | undefined {
+    return this.overlays.get<TOverlay>(id);
+  }
+
+  /** Return whether a managed overlay id or object exists. */
+  public hasOverlay(overlayOrId: Overlay | string): boolean {
+    return this.overlays.has(overlayOrId);
+  }
+
+  /** Show a managed overlay without changing its coordinate. */
+  public showOverlay(overlayOrId: Overlay | string): this {
+    this.overlays.show(overlayOrId);
+    return this;
+  }
+
+  /** Hide a managed overlay without changing its coordinate. */
+  public hideOverlay(overlayOrId: Overlay | string): this {
+    this.overlays.hide(overlayOrId);
+    return this;
+  }
+
+  /** Set or clear the coordinate of a managed overlay. */
+  public setOverlayPosition(
+    overlayOrId: Overlay | string,
+    position?: import('ol/coordinate.js').Coordinate,
+  ): this {
+    this.overlays.setPosition(overlayOrId, position);
+    return this;
+  }
+
+  /** Pan the map so a managed overlay is visible in the viewport. */
+  public panToOverlay(
+    overlayOrId: Overlay | string,
+    options?: Parameters<Overlay['panIntoView']>[0],
+  ): this {
+    this.overlays.panIntoView(overlayOrId, options);
+    return this;
   }
 
   /** Install a plugin once with automatic rollback on failure. */
@@ -388,6 +431,7 @@ export class Map {
     this.registry.clear();
     this.interactions.destroy();
     this.controls.destroy();
+    this.overlays.destroy();
     this.sources.destroy();
     this.layers.destroy();
     this.native.setTarget(undefined);
@@ -444,6 +488,18 @@ export class Map {
     this.interactions.on('active', event => this.events.emit('interaction:active', event));
     this.interactions.on('order', event => this.events.emit('interaction:order', event));
     this.interactions.on('metadata', event => this.events.emit('interaction:metadata', event));
+  }
+
+  private bindOverlayEvents(): void {
+    this.overlays.on('add', event => this.events.emit('overlay:add', event));
+    this.overlays.on('remove', event => this.events.emit('overlay:remove', event));
+    this.overlays.on('visible', event => this.events.emit('overlay:visible', event));
+    this.overlays.on('position', event => this.events.emit('overlay:position', event));
+    this.overlays.on('offset', event => this.events.emit('overlay:offset', event));
+    this.overlays.on('positioning', event => this.events.emit('overlay:positioning', event));
+    this.overlays.on('element', event => this.events.emit('overlay:element', event));
+    this.overlays.on('order', event => this.events.emit('overlay:order', event));
+    this.overlays.on('metadata', event => this.events.emit('overlay:metadata', event));
   }
 
   private bindHistoryEvents(): void {
