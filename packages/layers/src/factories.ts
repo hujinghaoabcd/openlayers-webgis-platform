@@ -1,3 +1,4 @@
+import {configureLayer, type LayerOptions} from '@omap/core';
 import Feature from 'ol/Feature.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import TileLayer from 'ol/layer/Tile.js';
@@ -11,13 +12,8 @@ import type Geometry from 'ol/geom/Geometry.js';
 import type BaseLayer from 'ol/layer/Base.js';
 import type {StyleLike} from 'ol/style/Style.js';
 
-export interface NamedLayerOptions {
-  id?: string;
-  title?: string;
-  visible?: boolean;
-  opacity?: number;
-  zIndex?: number;
-}
+/** Common metadata and state accepted by OMap layer factories. */
+export interface NamedLayerOptions extends Omit<LayerOptions, 'replace'> {}
 
 export interface XyzLayerOptions extends NamedLayerOptions {
   url: string;
@@ -32,19 +28,24 @@ export interface WmsLayerOptions extends NamedLayerOptions {
   crossOrigin?: string | null;
 }
 
-function applyMetadata<T extends BaseLayer>(layer: T, options: NamedLayerOptions): T {
-  if (options.id) layer.set('id', options.id);
-  if (options.title) layer.set('title', options.title);
-  if (options.visible !== undefined) layer.setVisible(options.visible);
-  if (options.opacity !== undefined) layer.setOpacity(options.opacity);
-  if (options.zIndex !== undefined) layer.setZIndex(options.zIndex);
-  return layer;
+function applyMetadata<TLayer extends BaseLayer>(
+  layer: TLayer,
+  defaults: NamedLayerOptions,
+  options: NamedLayerOptions,
+): TLayer {
+  return configureLayer(layer, {...defaults, ...options});
 }
 
+/** Create an OpenStreetMap tile basemap. */
 export function createOsmLayer(options: NamedLayerOptions = {}): TileLayer<OSM> {
-  return applyMetadata(new TileLayer({source: new OSM()}), options);
+  return applyMetadata(
+    new TileLayer({source: new OSM()}),
+    {id: 'osm', title: 'OpenStreetMap', kind: 'basemap', type: 'osm'},
+    options,
+  );
 }
 
+/** Create a generic XYZ tile layer. */
 export function createXyzLayer(options: XyzLayerOptions): TileLayer<XYZ> {
   const source = new XYZ({
     url: options.url,
@@ -52,18 +53,20 @@ export function createXyzLayer(options: XyzLayerOptions): TileLayer<XYZ> {
     ...(options.crossOrigin !== undefined ? {crossOrigin: options.crossOrigin} : {}),
     ...(options.maxZoom !== undefined ? {maxZoom: options.maxZoom} : {}),
   });
-  return applyMetadata(new TileLayer({source}), options);
+  return applyMetadata(new TileLayer({source}), {kind: 'basemap', type: 'xyz'}, options);
 }
 
+/** Create a tiled WMS overlay. */
 export function createWmsLayer(options: WmsLayerOptions): TileLayer<TileWMS> {
   const source = new TileWMS({
     url: options.url,
     params: options.params,
     ...(options.crossOrigin !== undefined ? {crossOrigin: options.crossOrigin} : {}),
   });
-  return applyMetadata(new TileLayer({source}), options);
+  return applyMetadata(new TileLayer({source}), {kind: 'overlay', type: 'wms'}, options);
 }
 
+/** Create an in-memory GeoJSON vector overlay. */
 export function createGeoJsonLayer(
   data: GeoJSONFeatureCollection,
   options: NamedLayerOptions & {style?: StyleLike} = {},
@@ -75,5 +78,5 @@ export function createGeoJsonLayer(
     source,
     ...(options.style !== undefined ? {style: options.style} : {}),
   });
-  return applyMetadata(layer, options);
+  return applyMetadata(layer, {kind: 'overlay', type: 'geojson'}, options);
 }

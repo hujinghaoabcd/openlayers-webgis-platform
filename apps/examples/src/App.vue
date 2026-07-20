@@ -3,6 +3,7 @@ import {computed, ref} from 'vue';
 import {projectMeta} from '@omap/project-meta';
 import BasicMap from './examples/BasicMap.vue';
 import CoreRuntime from './examples/CoreRuntime.vue';
+import LayerManagement from './examples/LayerManagement.vue';
 import PlannedExample from './examples/PlannedExample.vue';
 import {exampleCatalog} from './catalog';
 
@@ -30,6 +31,7 @@ const filtered = computed(() => {
       <section class="stage">
         <BasicMap v-if="selected.id==='map-basic-osm'" />
         <CoreRuntime v-else-if="selected.id==='core-runtime'" />
+        <LayerManagement v-else-if="selected.id==='layer-management'" />
         <PlannedExample v-else :title="selected.title" :description="selected.description" />
       </section>
     </main>
@@ -37,7 +39,7 @@ const filtered = computed(() => {
 </template>
 
 <style scoped>
-.shell { height: 100vh; display:grid; grid-template-columns: 310px 1fr; grid-template-rows:64px 1fr; overflow:hidden; }
+.shell { height:100vh; display:grid; grid-template-columns:310px 1fr; grid-template-rows:64px 1fr; overflow:hidden; }
 header { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:0 22px; color:white; background:#102c3d; }
 header input { width:min(420px,45vw); border:1px solid #587182; border-radius:8px; padding:9px 12px; color:white; background:#183b50; outline:none; }
 aside { overflow:auto; padding:12px; border-right:1px solid #dfe6ec; background:white; }
