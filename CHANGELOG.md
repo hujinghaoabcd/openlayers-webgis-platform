@@ -18,3 +18,7 @@
 - Managed `map.controls` collection with stable IDs, metadata, enable/disable state and ordering.
 - Typed control lifecycle, enabled, metadata and order events.
 - Zoom, Rotate, Attribution, ScaleLine, MousePosition, FullScreen, OverviewMap, ZoomSlider and ZoomToExtent factories.
+- Managed `map.interactions` collection with stable IDs, metadata, active state and ordering.
+- Exclusive interaction groups with automatic peer deactivation.
+- Typed interaction lifecycle, active-state, metadata and order events.
+- Select, Draw, Modify, Translate, Snap, DragBox, Extent and DragAndDrop interaction factories.
