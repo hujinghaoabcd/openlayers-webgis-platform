@@ -38,6 +38,15 @@ export const exampleCatalog: ExampleDefinition[] = [
     capabilities: ['layer.source', 'layer.loading', 'layer.wkt', 'map.fit'],
   },
   {
+    id: 'control-management',
+    title: '控件管理与标准控件',
+    category: '控件核心',
+    description: '按 ID 管理原生控件，切换启用状态、位置和集合顺序。',
+    tags: ['Controls', 'ScaleLine', 'MousePosition', 'FullScreen'],
+    sourcePath: 'src/examples/ControlManagement.vue',
+    capabilities: ['control.collection', 'control.state', 'control.factories'],
+  },
+  {
     id: 'planned-draw-edit',
     title: '绘制与编辑工具栏（规划）',
     category: '标绘编辑',

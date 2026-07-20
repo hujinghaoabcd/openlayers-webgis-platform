@@ -40,10 +40,12 @@ pnpm validate
 ```ts
 import View from 'ol/View.js';
 import {map} from '@omap/core';
+import {createScaleLineControl} from '@omap/controls';
 import {createOsmLayer, createWktLayer} from '@omap/layers';
 
 const viewer = map('map', {
   layers: [createOsmLayer({id: 'standard'})],
+  controls: [createScaleLineControl({bar: true})],
   view: new View({center: [0, 0], zoom: 2}),
 });
 
@@ -55,26 +57,23 @@ const area = createWktLayer({
   featureProjection: 'EPSG:3857',
 });
 
-viewer.on('layer:loaderror', ({id, error}) => {
-  console.error(id, error);
-});
-
 viewer.addLayer(area);
 viewer.fitLayer('area', {padding: [40, 40, 40, 40]});
-viewer.refreshLayer('standard');
-viewer.setBasemap('standard');
+viewer.disableControl('scale-line');
+viewer.enableControl('scale-line');
 
 console.log(viewer.sources.info('area'));
+console.log(viewer.controls.info('scale-line'));
 viewer.native.renderSync();
 await viewer.remove();
 ```
 
 ## 仓库入口
 
-- `packages/core`：`Map`、`map()`、事件、Layers、Sources、Scope、Registry 和插件内核
+- `packages/core`：`Map`、`map()`、事件、Layers、Sources、Controls、Scope、Registry 和插件内核
 - `packages/config`：版本化配置契约与校验
 - `packages/layers`：图层工厂、数据源、格式和样式能力
-- `packages/controls`：地图控件与工具条能力
+- `packages/controls`：原生控件工厂、元数据和控件扩展
 - `packages/interactions`：绘制、编辑、选择和历史命令
 - `packages/services`：服务客户端、请求管线和任务契约
 - `packages/analysis`：客户端、Worker 和远程空间分析

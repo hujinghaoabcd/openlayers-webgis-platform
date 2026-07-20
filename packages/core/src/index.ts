@@ -1,3 +1,10 @@
+export {
+  configureControl,
+  CONTROL_PROPERTY,
+  Controls,
+  getControlElement,
+  getControlId,
+} from './Controls.js';
 export {Events} from './events.js';
 export {Map} from './Map.js';
 export {map} from './factory.js';
@@ -11,6 +18,13 @@ export {
 export {Registry} from './Registry.js';
 export {Scope} from './Scope.js';
 export {Sources} from './Sources.js';
+export type {
+  ControlInfo,
+  ControlMetadata,
+  ControlOptions,
+  ControlPosition,
+  ControlsEventMap,
+} from './Controls.js';
 export type {EventListener, EventName} from './events.js';
 export type {
   LayerInfo,

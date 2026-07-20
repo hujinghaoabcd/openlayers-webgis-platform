@@ -15,3 +15,6 @@
 - `map.refreshLayer()` and `map.fitLayer()` source utilities.
 - Typed tile, image and vector loading events on the public map API.
 - ImageWMS, WMTS, GeoTIFF, Vector, VectorTile, KML, GPX, WKT and LayerGroup factories.
+- Managed `map.controls` collection with stable IDs, metadata, enable/disable state and ordering.
+- Typed control lifecycle, enabled, metadata and order events.
+- Zoom, Rotate, Attribution, ScaleLine, MousePosition, FullScreen, OverviewMap, ZoomSlider and ZoomToExtent factories.

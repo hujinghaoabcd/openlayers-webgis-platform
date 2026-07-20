@@ -2,6 +2,7 @@
 import {computed, ref} from 'vue';
 import {projectMeta} from '@omap/project-meta';
 import BasicMap from './examples/BasicMap.vue';
+import ControlManagement from './examples/ControlManagement.vue';
 import CoreRuntime from './examples/CoreRuntime.vue';
 import LayerManagement from './examples/LayerManagement.vue';
 import LayerSources from './examples/LayerSources.vue';
@@ -34,6 +35,7 @@ const filtered = computed(() => {
         <CoreRuntime v-else-if="selected.id==='core-runtime'" />
         <LayerManagement v-else-if="selected.id==='layer-management'" />
         <LayerSources v-else-if="selected.id==='layer-sources'" />
+        <ControlManagement v-else-if="selected.id==='control-management'" />
         <PlannedExample v-else :title="selected.title" :description="selected.description" />
       </section>
     </main>
