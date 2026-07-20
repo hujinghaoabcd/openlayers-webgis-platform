@@ -26,6 +26,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add packages/core/src/Overlays.ts
-          git commit -m "fix: satisfy strict overlay metadata typing"
+          git add packages/widgets/src/overlays.ts
+          git commit -m "fix: normalize polygon overlay anchors"
           git push
