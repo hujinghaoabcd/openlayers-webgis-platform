@@ -1,5 +1,19 @@
 import type {PluginContext} from '@omap/core';
 
+export {
+  createMarker,
+  createPopup,
+  getFeatureOverlayCoordinate,
+} from './overlays.js';
+export type {
+  MarkerController,
+  MarkerOptions,
+  OverlayContent,
+  OverlayControllerOptions,
+  PopupController,
+  PopupOptions,
+} from './overlays.js';
+
 export interface WidgetDefinition<TOptions = unknown> {
   readonly id: string;
   readonly title: string;
