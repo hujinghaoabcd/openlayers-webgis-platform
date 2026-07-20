@@ -56,6 +56,9 @@ importers:
       '@omap/vue':
         specifier: workspace:*
         version: link:../../packages/vue
+      '@omap/widgets':
+        specifier: workspace:*
+        version: link:../../packages/widgets
       ol:
         specifier: ^10.9.0
         version: 10.9.0
@@ -252,10 +255,19 @@ importers:
       '@omap/core':
         specifier: workspace:*
         version: link:../core
+      ol:
+        specifier: ^10.9.0
+        version: 10.9.0
     devDependencies:
+      happy-dom:
+        specifier: ^20.11.0
+        version: 20.11.0
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
+      vitest:
+        specifier: ^4.1.8
+        version: 4.1.10(@types/node@26.1.1)(happy-dom@20.11.0)(vite@8.1.5(@types/node@26.1.1)(yaml@2.9.0))
 
   templates/basic-viewer: {}
 
