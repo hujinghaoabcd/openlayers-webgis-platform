@@ -2,6 +2,7 @@ export {
   configureControl,
   CONTROL_PROPERTY,
   Controls,
+  getControlElement,
   getControlId,
 } from './Controls.js';
 export {Events} from './events.js';
