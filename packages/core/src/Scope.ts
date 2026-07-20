@@ -9,6 +9,7 @@ import type {EventListener} from './events.js';
 import type {InteractionOptions} from './Interactions.js';
 import type {LayerOptions} from './Layers.js';
 import type {Map} from './Map.js';
+import type {ManagedOverlayOptions} from './Overlays.js';
 import type {Registry, RegistryEventMap} from './Registry.js';
 import type {MapEventMap} from './types.js';
 
@@ -73,9 +74,12 @@ export class Scope {
   }
 
   /** Add an overlay and remove it automatically with the scope. */
-  public addOverlay<TOverlay extends Overlay>(overlay: TOverlay): TOverlay {
+  public addOverlay<TOverlay extends Overlay>(
+    overlay: TOverlay,
+    options: ManagedOverlayOptions = {},
+  ): TOverlay {
     this.assertActive();
-    this.map.addOverlay(overlay);
+    this.map.addOverlay(overlay, options);
     this.add(() => {
       this.map.removeOverlay(overlay);
     });
