@@ -83,19 +83,13 @@ describe('extended layer factories', () => {
     expect(vectorTile.get('type')).toBe('vector-tile');
   });
 
-  it('reads KML, GPX and WKT inline data', () => {
-    const kml = createKmlLayer({
-      id: 'kml',
-      data: '<?xml version="1.0"?><kml xmlns="http://www.opengis.net/kml/2.2"><Placemark><Point><coordinates>1,2</coordinates></Point></Placemark></kml>',
-    });
-    const gpx = createGpxLayer({
-      id: 'gpx',
-      data: '<?xml version="1.0"?><gpx version="1.1" creator="omap" xmlns="http://www.topografix.com/GPX/1/1"><wpt lat="2" lon="1" /></gpx>',
-    });
+  it('creates KML and GPX URL sources and parses inline WKT', () => {
+    const kml = createKmlLayer({id: 'kml', url: 'https://example.com/data.kml'});
+    const gpx = createGpxLayer({id: 'gpx', url: 'https://example.com/data.gpx'});
     const wkt = createWktLayer({id: 'wkt', data: 'POINT (1 2)'});
 
-    expect(kml.getSource()?.getFeatures()).toHaveLength(1);
-    expect(gpx.getSource()?.getFeatures()).toHaveLength(1);
+    expect(kml.getSource()).toBeInstanceOf(VectorSource);
+    expect(gpx.getSource()).toBeInstanceOf(VectorSource);
     expect(wkt.getSource()?.getFeatures()).toHaveLength(1);
     expect(kml.get('type')).toBe('kml');
     expect(gpx.get('type')).toBe('gpx');

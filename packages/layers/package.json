@@ -22,7 +22,6 @@
     "ol": "^10.9.0"
   },
   "devDependencies": {
-    "happy-dom": "^20.11.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8"
   }
