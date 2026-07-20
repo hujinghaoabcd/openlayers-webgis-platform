@@ -140,11 +140,12 @@ function finish<TInteraction extends Interaction>(
   },
   options: ManagedInteractionFactoryOptions,
 ): TInteraction {
+  const group = options.group ?? defaults.group;
   return configureInteraction(interaction, {
     id: options.id ?? defaults.id,
     title: options.title ?? defaults.title,
     type: defaults.type,
-    group: options.group ?? defaults.group,
+    ...(group === undefined ? {} : {group}),
     active: options.active ?? defaults.active,
   });
 }
