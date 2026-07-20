@@ -589,10 +589,10 @@ function numbersEqual(left: readonly number[], right: readonly number[]): boolea
 }
 
 function isMetadataKey(key: string): boolean {
-  return [
-    OVERLAY_PROPERTY.id,
-    OVERLAY_PROPERTY.title,
-    OVERLAY_PROPERTY.type,
-    OVERLAY_PROPERTY.group,
-  ].includes(key);
+  return (
+    key === OVERLAY_PROPERTY.id ||
+    key === OVERLAY_PROPERTY.title ||
+    key === OVERLAY_PROPERTY.type ||
+    key === OVERLAY_PROPERTY.group
+  );
 }
