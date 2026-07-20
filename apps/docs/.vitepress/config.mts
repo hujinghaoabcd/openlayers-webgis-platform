@@ -25,6 +25,7 @@ export default defineConfig({
           {text: '核心运行时', link: '/architecture/runtime'},
           {text: '图层核心', link: '/architecture/layers'},
           {text: '控件核心', link: '/architecture/controls'},
+          {text: '交互核心', link: '/architecture/interactions'},
           {text: '插件边界', link: '/architecture/plugins'},
         ]},
       ],
