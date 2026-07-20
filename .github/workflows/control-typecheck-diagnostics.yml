@@ -1,9 +1,12 @@
 name: Control typecheck diagnostics
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/control-core
+      - main
+    paths:
+      - 'packages/core/src/**'
+      - '.github/workflows/control-typecheck-diagnostics.yml'
 
 permissions:
   contents: read
