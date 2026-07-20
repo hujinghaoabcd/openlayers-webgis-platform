@@ -4,6 +4,7 @@ import type Control from 'ol/control/Control.js';
 import type Interaction from 'ol/interaction/Interaction.js';
 import type BaseLayer from 'ol/layer/Base.js';
 import type Overlay from 'ol/Overlay.js';
+import type {ControlOptions} from './Controls.js';
 import type {EventListener} from './events.js';
 import type {LayerOptions} from './Layers.js';
 import type {Map} from './Map.js';
@@ -45,9 +46,12 @@ export class Scope {
   }
 
   /** Add a control and remove it automatically with the scope. */
-  public addControl<TControl extends Control>(control: TControl): TControl {
+  public addControl<TControl extends Control>(
+    control: TControl,
+    options: ControlOptions = {},
+  ): TControl {
     this.assertActive();
-    this.map.addControl(control);
+    this.map.addControl(control, options);
     this.add(() => {
       this.map.removeControl(control);
     });

@@ -6,6 +6,7 @@ import type Interaction from 'ol/interaction/Interaction.js';
 import {defaults as defaultInteractions} from 'ol/interaction/defaults.js';
 import type BaseLayer from 'ol/layer/Base.js';
 import type Overlay from 'ol/Overlay.js';
+import {Controls, type ControlOptions} from './Controls.js';
 import {Events, type EventListener} from './events.js';
 import {Layers, type LayerOptions} from './Layers.js';
 import {Registry} from './Registry.js';
@@ -21,9 +22,9 @@ interface InstalledPlugin {
 /**
  * The primary OMap map object.
  *
- * OMap adds a concise lifecycle, events, managed layers and sources, scopes,
- * registry and plugins while keeping the underlying OpenLayers map available
- * through {@link native}.
+ * OMap adds a concise lifecycle, events, managed layers, sources and controls,
+ * scopes, registry and plugins while keeping the underlying OpenLayers map
+ * available through {@link native}.
  */
 export class Map {
   /** The underlying OpenLayers map. */
@@ -34,6 +35,9 @@ export class Map {
 
   /** Source state and loading utilities for managed layers. */
   public readonly sources: Sources;
+
+  /** Managed control collection backed by the native OpenLayers collection. */
+  public readonly controls: Controls;
 
   /** Shared registry for named factories and runtime capabilities. */
   public readonly registry = new Registry();
@@ -54,8 +58,10 @@ export class Map {
     });
     this.layers = new Layers(this.native);
     this.sources = new Sources(this.native, this.layers);
+    this.controls = new Controls(this.native);
     this.bindLayerEvents();
     this.bindSourceEvents();
+    this.bindControlEvents();
   }
 
   /** Register a typed map event listener. */
@@ -184,20 +190,39 @@ export class Map {
     return this;
   }
 
-  /** Add a control to the map. */
-  public addControl(control: Control): this {
+  /** Add a control through the managed control collection. */
+  public addControl(control: Control, options: ControlOptions = {}): this {
     this.assertActive();
-    this.native.addControl(control);
-    this.events.emit('control:add', {control});
+    this.controls.add(control, options);
     return this;
   }
 
-  /** Remove a control from the map. */
-  public removeControl(control: Control): Control | undefined {
+  /** Remove a control by object or stable id. */
+  public removeControl(controlOrId: Control | string): Control | undefined {
     this.assertActive();
-    const removed = this.native.removeControl(control);
-    if (removed) this.events.emit('control:remove', {control: removed});
-    return removed;
+    return this.controls.remove(controlOrId);
+  }
+
+  /** Return a managed control by stable id. */
+  public getControl<TControl extends Control = Control>(id: string): TControl | undefined {
+    return this.controls.get<TControl>(id);
+  }
+
+  /** Return whether a managed control id or object exists. */
+  public hasControl(controlOrId: Control | string): boolean {
+    return this.controls.has(controlOrId);
+  }
+
+  /** Enable and display a managed control. */
+  public enableControl(controlOrId: Control | string): this {
+    this.controls.enable(controlOrId);
+    return this;
+  }
+
+  /** Disable and hide a managed control without removing it. */
+  public disableControl(controlOrId: Control | string): this {
+    this.controls.disable(controlOrId);
+    return this;
   }
 
   /** Add an interaction to the map. */
@@ -304,6 +329,7 @@ export class Map {
     }
 
     this.registry.clear();
+    this.controls.destroy();
     this.sources.destroy();
     this.layers.destroy();
     this.native.setTarget(undefined);
@@ -344,6 +370,14 @@ export class Map {
     this.sources.on('loadstart', event => this.events.emit('layer:loadstart', event));
     this.sources.on('loadend', event => this.events.emit('layer:loadend', event));
     this.sources.on('loaderror', event => this.events.emit('layer:loaderror', event));
+  }
+
+  private bindControlEvents(): void {
+    this.controls.on('add', event => this.events.emit('control:add', event));
+    this.controls.on('remove', event => this.events.emit('control:remove', event));
+    this.controls.on('enabled', event => this.events.emit('control:enabled', event));
+    this.controls.on('order', event => this.events.emit('control:order', event));
+    this.controls.on('metadata', event => this.events.emit('control:metadata', event));
   }
 
   private createPluginContext(scope: Scope): PluginContext {
