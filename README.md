@@ -40,22 +40,23 @@ pnpm validate
 ```ts
 import View from 'ol/View.js';
 import {map} from '@omap/core';
-import {createOsmLayer} from '@omap/layers';
+import {createGeoJsonLayer, createOsmLayer} from '@omap/layers';
 
 const viewer = map('map', {
   layers: [createOsmLayer({id: 'standard'})],
   view: new View({center: [0, 0], zoom: 2}),
 });
 
+const roads = createGeoJsonLayer(
+  {type: 'FeatureCollection', features: []},
+  {id: 'roads', title: 'Road network'},
+);
+
 viewer.on('layer:visibility', ({id, visible}) => {
   console.log(id, visible);
 });
 
-viewer.addLayer(roads, {
-  id: 'roads',
-  title: 'Road network',
-  kind: 'overlay',
-});
+viewer.addLayer(roads);
 viewer.hideLayer('roads');
 viewer.setLayerOpacity('roads', 0.6);
 viewer.setBasemap('standard');
