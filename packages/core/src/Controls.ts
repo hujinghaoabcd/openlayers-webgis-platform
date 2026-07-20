@@ -64,6 +64,17 @@ const POSITION_CLASSES: Record<ControlPosition, string> = {
   custom: 'omap-control-position-custom',
 };
 
+interface ControlElementAccess {
+  readonly element: HTMLElement;
+}
+
+/** Return the DOM element owned by a native OpenLayers control. */
+export function getControlElement(control: Control): HTMLElement {
+  const element = (control as unknown as ControlElementAccess).element;
+  if (!element) throw new Error('Control does not expose a DOM element.');
+  return element;
+}
+
 /** Apply OMap metadata and enabled state to a native OpenLayers control. */
 export function configureControl<TControl extends Control>(
   control: TControl,
@@ -87,13 +98,7 @@ export function getControlId(control: Control): string | undefined {
   return normalizeId(control.get(CONTROL_PROPERTY.id));
 }
 
-/**
- * Managed view of an OpenLayers map control collection.
- *
- * Native control instances remain fully accessible. OMap adds stable ids,
- * metadata, lookup, ordering and an enabled state expressed through the
- * control element.
- */
+/** Managed view of an OpenLayers map control collection. */
 export class Controls {
   private readonly collection: Collection<Control>;
   private readonly events = new Events<ControlsEventMap>();
@@ -109,7 +114,6 @@ export class Controls {
   public constructor(map: OlMap) {
     this.collection = map.getControls();
     for (const control of this.collection.getArray()) this.register(control, false);
-
     this.collectionKeys = [
       this.collection.on('add', event => {
         if (!this.moving) this.register(event.element, true, event.index);
@@ -120,7 +124,6 @@ export class Controls {
     ];
   }
 
-  /** Register a typed control collection listener. */
   public on<K extends keyof ControlsEventMap>(
     type: K,
     listener: EventListener<ControlsEventMap[K]>,
@@ -129,7 +132,6 @@ export class Controls {
     return this;
   }
 
-  /** Register a typed listener that runs once. */
   public once<K extends keyof ControlsEventMap>(
     type: K,
     listener: EventListener<ControlsEventMap[K]>,
@@ -138,7 +140,6 @@ export class Controls {
     return this;
   }
 
-  /** Remove control collection listeners. */
   public off(): this;
   public off<K extends keyof ControlsEventMap>(type: K): this;
   public off<K extends keyof ControlsEventMap>(
@@ -155,14 +156,13 @@ export class Controls {
     return this;
   }
 
-  /** Add a native OpenLayers control to the collection. */
+  /** Add a native OpenLayers control. */
   public add<TControl extends Control>(
     control: TControl,
     options: ControlOptions = {},
   ): TControl {
     this.assertActive();
-    const existingIndex = this.collection.getArray().indexOf(control);
-    if (existingIndex >= 0) {
+    if (this.collection.getArray().includes(control)) {
       this.update(control, options);
       return control;
     }
@@ -171,9 +171,7 @@ export class Controls {
     if (requestedId) {
       const existing = this.byId.get(requestedId);
       if (existing) {
-        if (!options.replace) {
-          throw new Error(`Control id is already registered: ${requestedId}`);
-        }
+        if (!options.replace) throw new Error(`Control id is already registered: ${requestedId}`);
         this.remove(existing);
       }
     }
@@ -184,59 +182,50 @@ export class Controls {
     return control;
   }
 
-  /** Remove a control by object or stable id. */
+  /** Remove a control by object or id. */
   public remove(controlOrId: Control | string): Control | undefined {
     this.assertActive();
     const control = this.resolve(controlOrId);
     return control ? this.collection.remove(control) : undefined;
   }
 
-  /** Remove all managed controls. */
   public clear(): void {
     this.assertActive();
     for (const control of this.all()) this.collection.remove(control);
   }
 
-  /** Return a managed control by id. */
   public get<TControl extends Control = Control>(id: string): TControl | undefined {
     return this.byId.get(id) as TControl | undefined;
   }
 
-  /** Return a managed control by id or throw. */
   public require<TControl extends Control = Control>(id: string): TControl {
     const control = this.get<TControl>(id);
     if (!control) throw new Error(`Control is not registered: ${id}`);
     return control;
   }
 
-  /** Return whether a control object or id is present. */
   public has(controlOrId: Control | string): boolean {
     return this.resolve(controlOrId) !== undefined;
   }
 
-  /** Return all controls in collection order. */
   public all(): Control[] {
     return [...this.collection.getArray()];
   }
 
-  /** Return all registered control ids in collection order. */
   public ids(): string[] {
     return this.all().map(control => this.id(control));
   }
 
-  /** Return the number of managed controls. */
   public count(): number {
     return this.collection.getLength();
   }
 
-  /** Return the stable id assigned to a control. */
   public id(control: Control): string {
     const id = this.idsByControl.get(control);
     if (!id) throw new Error('Control is not managed by this map.');
     return id;
   }
 
-  /** Return a snapshot of one control. */
   public info(controlOrId: Control | string): ControlInfo {
     const control = this.requireControl(controlOrId);
     return {
@@ -282,44 +271,34 @@ export class Controls {
 
     const enabled = readEnabled(control);
     this.events.emit('metadata', {control, metadata: this.metadata(control)});
-    if (enabled !== previousEnabled) {
-      this.events.emit('enabled', {control, id: nextId, enabled});
-    }
+    if (enabled !== previousEnabled) this.events.emit('enabled', {control, id: nextId, enabled});
     return control;
   }
 
-  /** Enable and display a managed control. */
   public enable(controlOrId: Control | string): Control {
     return this.setEnabled(controlOrId, true);
   }
 
-  /** Disable and hide a managed control without removing it. */
   public disable(controlOrId: Control | string): Control {
     return this.setEnabled(controlOrId, false);
   }
 
-  /** Toggle a control and return its new enabled state. */
   public toggle(controlOrId: Control | string): boolean {
-    const control = this.requireControl(controlOrId);
-    const enabled = !readEnabled(control);
-    this.setEnabled(control, enabled);
+    const enabled = !this.isEnabled(controlOrId);
+    this.setEnabled(controlOrId, enabled);
     return enabled;
   }
 
-  /** Return whether a managed control is enabled. */
   public isEnabled(controlOrId: Control | string): boolean {
     return readEnabled(this.requireControl(controlOrId));
   }
 
-  /** Set a managed control's enabled state. */
   public setEnabled(controlOrId: Control | string, enabled: boolean): Control {
     const control = this.requireControl(controlOrId);
-    if (readEnabled(control) === enabled) return control;
-    control.set(CONTROL_PROPERTY.enabled, enabled);
+    if (readEnabled(control) !== enabled) control.set(CONTROL_PROPERTY.enabled, enabled);
     return control;
   }
 
-  /** Move a control to a zero-based collection index. */
   public move(controlOrId: Control | string, index: number): Control {
     this.assertActive();
     const control = this.requireControl(controlOrId);
@@ -338,17 +317,14 @@ export class Controls {
     return control;
   }
 
-  /** Move a control to the end of the native collection. */
   public bringToFront(controlOrId: Control | string): Control {
     return this.move(controlOrId, this.collection.getLength() - 1);
   }
 
-  /** Move a control to the beginning of the native collection. */
   public sendToBack(controlOrId: Control | string): Control {
     return this.move(controlOrId, 0);
   }
 
-  /** Stop observing the native collection and its controls. */
   public destroy(): void {
     if (this.destroyed) return;
     this.destroyed = true;
@@ -390,10 +366,9 @@ export class Controls {
   }
 
   private attach(control: Control): void {
-    const keys = [
+    this.controlKeys.set(control, [
       control.on('propertychange', event => this.handlePropertyChange(control, event.key)),
-    ];
-    this.controlKeys.set(control, keys);
+    ]);
   }
 
   private detach(control: Control): void {
@@ -441,8 +416,11 @@ export class Controls {
   }
 
   private resolve(controlOrId: Control | string): Control | undefined {
-    if (typeof controlOrId === 'string') return this.byId.get(controlOrId);
-    return this.collection.getArray().includes(controlOrId) ? controlOrId : undefined;
+    return typeof controlOrId === 'string'
+      ? this.byId.get(controlOrId)
+      : this.collection.getArray().includes(controlOrId)
+        ? controlOrId
+        : undefined;
   }
 
   private requireControl(controlOrId: Control | string): Control {
@@ -500,23 +478,22 @@ function readEnabled(control: Control): boolean {
 }
 
 function applyElementState(control: Control, explicitId?: string): void {
+  const element = getControlElement(control);
   const id = explicitId ?? getControlId(control);
-  if (id) control.element.dataset.omapControlId = id;
+  if (id) element.dataset.omapControlId = id;
 
-  for (const className of Object.values(POSITION_CLASSES)) {
-    control.element.classList.remove(className);
-  }
+  for (const className of Object.values(POSITION_CLASSES)) element.classList.remove(className);
   const position = readPosition(control);
   if (position) {
-    control.element.classList.add(POSITION_CLASSES[position]);
-    control.element.dataset.omapControlPosition = position;
+    element.classList.add(POSITION_CLASSES[position]);
+    element.dataset.omapControlPosition = position;
   } else {
-    delete control.element.dataset.omapControlPosition;
+    delete element.dataset.omapControlPosition;
   }
 
   const enabled = readEnabled(control);
-  control.element.hidden = !enabled;
-  control.element.setAttribute('aria-hidden', enabled ? 'false' : 'true');
+  element.hidden = !enabled;
+  element.setAttribute('aria-hidden', enabled ? 'false' : 'true');
 }
 
 function isPosition(value: unknown): value is ControlPosition {
