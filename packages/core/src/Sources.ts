@@ -15,8 +15,8 @@ export type LayerLoadStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 /** Options passed to {@link Sources.fit}. */
 export interface LayerFitOptions {
-  readonly size?: readonly [number, number];
-  readonly padding?: readonly number[];
+  readonly size?: [number, number];
+  readonly padding?: number[];
   readonly nearest?: boolean;
   readonly minResolution?: number;
   readonly maxZoom?: number;
