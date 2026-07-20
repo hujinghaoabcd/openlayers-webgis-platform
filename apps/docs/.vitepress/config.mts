@@ -2,13 +2,13 @@ import {defineConfig} from 'vitepress';
 
 export default defineConfig({
   lang: 'zh-CN',
-  title: 'OrbiLayer',
-  description: '基于 OpenLayers 的自研二维 WebGIS SDK',
+  title: 'OMap',
+  description: '基于 OpenLayers 的模块化二维 WebGIS 开发库',
   themeConfig: {
     nav: [
       {text: '指南', link: '/guide/getting-started'},
       {text: '架构', link: '/architecture/overview'},
-      {text: '功能', link: '/reference/capabilities'},
+      {text: '功能矩阵', link: '/reference/capabilities'},
       {text: 'API', link: '/api/index.html'},
     ],
     sidebar: {
@@ -22,11 +22,12 @@ export default defineConfig({
       '/architecture/': [
         {text: '架构', items: [
           {text: '整体设计', link: '/architecture/overview'},
+          {text: '核心运行时', link: '/architecture/runtime'},
           {text: '插件边界', link: '/architecture/plugins'},
         ]},
       ],
       '/reference/': [
-        {text: '能力', items: [
+        {text: '参考', items: [
           {text: '功能矩阵', link: '/reference/capabilities'},
           {text: '示例分类', link: '/reference/examples'},
         ]},
@@ -34,6 +35,6 @@ export default defineConfig({
     },
     socialLinks: [],
     search: {provider: 'local'},
-    footer: {message: 'OrbiLayer self-developed WebGIS platform'},
+    footer: {message: 'OMap WebGIS library'},
   },
 });

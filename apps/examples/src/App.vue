@@ -2,6 +2,7 @@
 import {computed, ref} from 'vue';
 import {projectMeta} from '@omap/project-meta';
 import BasicMap from './examples/BasicMap.vue';
+import CoreRuntime from './examples/CoreRuntime.vue';
 import PlannedExample from './examples/PlannedExample.vue';
 import {exampleCatalog} from './catalog';
 
@@ -28,6 +29,7 @@ const filtered = computed(() => {
       <section class="meta"><div><small>{{ selected.category }}</small><h1>{{ selected.title }}</h1><p>{{ selected.description }}</p></div><code>{{ selected.sourcePath }}</code></section>
       <section class="stage">
         <BasicMap v-if="selected.id==='map-basic-osm'" />
+        <CoreRuntime v-else-if="selected.id==='core-runtime'" />
         <PlannedExample v-else :title="selected.title" :description="selected.description" />
       </section>
     </main>

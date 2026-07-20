@@ -1,20 +1,22 @@
 # 插件
 
-插件必须声明唯一 `id`，并实现安装逻辑。插件创建的监听器、图层、控件和其他资源应在可选的 `dispose` 方法中完整释放。
+插件声明唯一 `id` 并实现安装逻辑。每个插件自动获得独立的 `scope` 和共享 `registry`。插件创建的图层、控件、交互、监听器及其他资源应登记到 Scope，由 OMap 统一释放。
 
 ```ts
 import {definePlugin} from '@omap/core';
 
 export const samplePlugin = definePlugin({
   id: 'sample',
-  install({map, native}) {
+  install({map, native, scope, registry}) {
     native.set('pluginOwner', map);
-  },
-  dispose({native}) {
-    native.unset('pluginOwner');
+    scope.add(() => native.unset('pluginOwner'));
+    registry.register('plugin', 'sample', {enabled: true});
+    scope.add(() => registry.unregister('plugin', 'sample'));
   },
 });
 ```
+
+插件安装失败时，Scope 会自动回滚已经登记的资源。地图移除时，插件按照安装顺序的相反方向释放。
 
 适合插件化的能力包括：
 

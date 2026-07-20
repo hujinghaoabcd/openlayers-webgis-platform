@@ -11,6 +11,15 @@ export const exampleCatalog: ExampleDefinition[] = [
     capabilities: ['map.lifecycle', 'layer.osm'],
   },
   {
+    id: 'core-runtime',
+    title: '事件、Scope 与 Registry',
+    category: '地图基础',
+    description: '演示类型安全事件、资源作用域和运行时注册中心。',
+    tags: ['Events', 'Scope', 'Registry'],
+    sourcePath: 'src/examples/CoreRuntime.vue',
+    capabilities: ['core.events', 'core.scope', 'core.registry'],
+  },
+  {
     id: 'planned-layer-management',
     title: '图层树与图层管理（规划）',
     category: '控件与交互',
