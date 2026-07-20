@@ -8,13 +8,14 @@
   },
   "dependencies": {
     "@omap/core": "workspace:*",
+    "@omap/controls": "workspace:*",
+    "@omap/example-kit": "workspace:*",
     "@omap/layers": "workspace:*",
+    "@omap/project-meta": "workspace:*",
     "@omap/vue": "workspace:*",
     "ol": "^10.9.0",
     "vue": "^3.5.40",
-    "vue-router": "^4.6.0",
-    "@omap/example-kit": "workspace:*",
-    "@omap/project-meta": "workspace:*"
+    "vue-router": "^4.6.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.0",
