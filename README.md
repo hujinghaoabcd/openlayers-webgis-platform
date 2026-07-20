@@ -1,6 +1,6 @@
 # OMap
 
-OMap 是一个基于 OpenLayers 构建的模块化二维 WebGIS 开发库。项目提供简洁的地图入口、原生 OpenLayers 访问、图层、控件、交互、命令历史、服务、空间分析、专题可视化、Widget 和 Vue 组件。
+OMap 是一个基于 OpenLayers 构建的模块化二维 WebGIS 开发库。项目提供简洁的地图入口、原生 OpenLayers 访问、图层、控件、交互、Overlay、命令历史、服务、空间分析、专题可视化、Widget 和 Vue 组件。
 
 > 当前状态：核心库第一阶段开发中。所有公开能力均在本仓库内独立设计、实现、测试和维护。
 
@@ -53,6 +53,7 @@ import {
   createVectorLayer,
   createWktLayer,
 } from '@omap/layers';
+import {createMarker, createPopup} from '@omap/widgets';
 
 const sketches = new VectorSource();
 const sketchLayer = createVectorLayer({
@@ -77,12 +78,16 @@ const area = createWktLayer({
 const draw = createDrawInteraction({source: sketches, type: 'Polygon'});
 const modify = createModifyInteraction({source: sketches});
 const snap = createSnapInteraction({source: sketches});
+const marker = createMarker({id: 'selected-location', label: 'Selected location'});
+const popup = createPopup({id: 'details', content: 'Click the map'});
 
 viewer
   .addLayer(area)
   .addInteraction(draw)
   .addInteraction(modify)
-  .addInteraction(snap);
+  .addInteraction(snap)
+  .addOverlay(marker.overlay)
+  .addOverlay(popup.overlay);
 
 const unbindHistory = bindFeatureHistory({
   history: viewer.history,
@@ -94,22 +99,28 @@ const unbindHistory = bindFeatureHistory({
 viewer.fitLayer('area', {padding: [40, 40, 40, 40]});
 viewer.activateInteraction('draw');
 
+marker.setPosition([0, 0]);
+popup.open([0, 0], 'Selected location');
+
 await viewer.undo();
 await viewer.redo();
 
 console.log(viewer.sources.info('area'));
 console.log(viewer.controls.info('scale-line'));
 console.log(viewer.interactions.info('draw'));
+console.log(viewer.overlays.info('details'));
 console.log(viewer.history.state());
 viewer.native.renderSync();
 
 unbindHistory();
+popup.destroy();
+marker.destroy();
 await viewer.remove();
 ```
 
 ## 仓库入口
 
-- `packages/core`：`Map`、`map()`、事件、Layers、Sources、Controls、Interactions、History、Scope、Registry 和插件内核
+- `packages/core`：`Map`、`map()`、事件、Layers、Sources、Controls、Interactions、Overlays、History、Scope、Registry 和插件内核
 - `packages/config`：版本化配置契约与校验
 - `packages/layers`：图层工厂、数据源、格式和样式能力
 - `packages/controls`：原生控件工厂、元数据和控件扩展
@@ -117,7 +128,7 @@ await viewer.remove();
 - `packages/services`：服务客户端、请求管线和任务契约
 - `packages/analysis`：客户端、Worker 和远程空间分析
 - `packages/visualization`：专题渲染、动画和图表覆盖物
-- `packages/widgets`：框架无关 Widget 注册与生命周期
+- `packages/widgets`：Popup、Marker、框架无关 Widget 注册与生命周期
 - `packages/vue`：Vue 组件和组合式 API
 - `packages/example-kit`：示例元数据和运行器
 - `apps/examples`：可运行开发示例
