@@ -8,6 +8,7 @@ import type {LayersEventMap} from './Layers.js';
 import type {Map as OMap} from './Map.js';
 import type {Registry} from './Registry.js';
 import type {Scope} from './Scope.js';
+import type {SourcesEventMap} from './Sources.js';
 
 /** A DOM element or element id accepted as a map target. */
 export type MapTarget = string | HTMLElement;
@@ -33,6 +34,11 @@ export interface MapEventMap {
   'layer:zIndex': LayersEventMap['zIndex'];
   'layer:order': LayersEventMap['order'];
   'layer:metadata': LayersEventMap['metadata'];
+  'layer:source': SourcesEventMap['source'];
+  'layer:source-state': SourcesEventMap['state'];
+  'layer:loadstart': SourcesEventMap['loadstart'];
+  'layer:loadend': SourcesEventMap['loadend'];
+  'layer:loaderror': SourcesEventMap['loaderror'];
   'basemap:change': LayersEventMap['basemap'];
   'control:add': {readonly control: Control};
   'control:remove': {readonly control: Control};
