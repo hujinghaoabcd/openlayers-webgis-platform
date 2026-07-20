@@ -40,34 +40,38 @@ pnpm validate
 ```ts
 import View from 'ol/View.js';
 import {map} from '@omap/core';
-import {createGeoJsonLayer, createOsmLayer} from '@omap/layers';
+import {createOsmLayer, createWktLayer} from '@omap/layers';
 
 const viewer = map('map', {
   layers: [createOsmLayer({id: 'standard'})],
   view: new View({center: [0, 0], zoom: 2}),
 });
 
-const roads = createGeoJsonLayer(
-  {type: 'FeatureCollection', features: []},
-  {id: 'roads', title: 'Road network'},
-);
-
-viewer.on('layer:visibility', ({id, visible}) => {
-  console.log(id, visible);
+const area = createWktLayer({
+  id: 'area',
+  title: 'Study area',
+  data: 'POLYGON ((118 31, 119 31, 119 32, 118 32, 118 31))',
+  dataProjection: 'EPSG:4326',
+  featureProjection: 'EPSG:3857',
 });
 
-viewer.addLayer(roads);
-viewer.hideLayer('roads');
-viewer.setLayerOpacity('roads', 0.6);
+viewer.on('layer:loaderror', ({id, error}) => {
+  console.error(id, error);
+});
+
+viewer.addLayer(area);
+viewer.fitLayer('area', {padding: [40, 40, 40, 40]});
+viewer.refreshLayer('standard');
 viewer.setBasemap('standard');
 
+console.log(viewer.sources.info('area'));
 viewer.native.renderSync();
 await viewer.remove();
 ```
 
 ## 仓库入口
 
-- `packages/core`：`Map`、`map()`、事件、Layers、Scope、Registry 和插件内核
+- `packages/core`：`Map`、`map()`、事件、Layers、Sources、Scope、Registry 和插件内核
 - `packages/config`：版本化配置契约与校验
 - `packages/layers`：图层工厂、数据源、格式和样式能力
 - `packages/controls`：地图控件与工具条能力
