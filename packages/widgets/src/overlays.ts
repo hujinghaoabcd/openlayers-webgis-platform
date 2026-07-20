@@ -230,9 +230,9 @@ export function getFeatureOverlayCoordinate(
   if (geometry instanceof MultiLineString) {
     return cloneCoordinate(geometry.getLineString(0)?.getCoordinateAt(0.5));
   }
-  if (geometry instanceof Polygon) return cloneCoordinate(geometry.getInteriorPoint().getCoordinates());
+  if (geometry instanceof Polygon) return toXY(geometry.getInteriorPoint().getCoordinates());
   if (geometry instanceof MultiPolygon) {
-    return cloneCoordinate(geometry.getInteriorPoints().getFirstCoordinate());
+    return toXY(geometry.getInteriorPoints().getFirstCoordinate());
   }
   if (geometry instanceof Circle) return cloneCoordinate(geometry.getCenter());
   return cloneCoordinate(getCenter(geometry.getExtent()));
@@ -246,6 +246,10 @@ function setOverlayContent(target: HTMLElement, content: OverlayContent): void {
 
 function cloneCoordinate(coordinate: Coordinate | undefined): Coordinate | undefined {
   return coordinate ? [...coordinate] : undefined;
+}
+
+function toXY(coordinate: Coordinate | undefined): Coordinate | undefined {
+  return coordinate ? [coordinate[0]!, coordinate[1]!] : undefined;
 }
 
 function joinClasses(...values: Array<string | undefined>): string {
