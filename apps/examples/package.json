@@ -14,6 +14,7 @@
     "@omap/layers": "workspace:*",
     "@omap/project-meta": "workspace:*",
     "@omap/vue": "workspace:*",
+    "@omap/widgets": "workspace:*",
     "ol": "^10.9.0",
     "vue": "^3.5.40",
     "vue-router": "^4.6.0"
