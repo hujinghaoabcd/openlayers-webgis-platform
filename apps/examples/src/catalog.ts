@@ -29,6 +29,15 @@ export const exampleCatalog: ExampleDefinition[] = [
     capabilities: ['layer.collection', 'layer.basemap', 'layer.state'],
   },
   {
+    id: 'layer-sources',
+    title: '数据源状态与格式图层',
+    category: '图层核心',
+    description: '查看数据源状态与加载事件，刷新底图，并定位 WKT 图层范围。',
+    tags: ['Sources', 'Loading', 'WKT', 'Fit'],
+    sourcePath: 'src/examples/LayerSources.vue',
+    capabilities: ['layer.source', 'layer.loading', 'layer.wkt', 'map.fit'],
+  },
+  {
     id: 'planned-draw-edit',
     title: '绘制与编辑工具栏（规划）',
     category: '标绘编辑',

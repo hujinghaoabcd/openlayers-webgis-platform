@@ -10,6 +10,7 @@ import {Events, type EventListener} from './events.js';
 import {Layers, type LayerOptions} from './Layers.js';
 import {Registry} from './Registry.js';
 import {Scope} from './Scope.js';
+import {Sources, type LayerFitOptions} from './Sources.js';
 import type {MapEventMap, MapOptions, MapTarget, Plugin, PluginContext} from './types.js';
 
 interface InstalledPlugin {
@@ -20,9 +21,9 @@ interface InstalledPlugin {
 /**
  * The primary OMap map object.
  *
- * OMap adds a concise lifecycle, events, managed layers, scopes, registry and
- * plugins while keeping the underlying OpenLayers map available through
- * {@link native}.
+ * OMap adds a concise lifecycle, events, managed layers and sources, scopes,
+ * registry and plugins while keeping the underlying OpenLayers map available
+ * through {@link native}.
  */
 export class Map {
   /** The underlying OpenLayers map. */
@@ -30,6 +31,9 @@ export class Map {
 
   /** Managed layer collection backed by the native OpenLayers collection. */
   public readonly layers: Layers;
+
+  /** Source state and loading utilities for managed layers. */
+  public readonly sources: Sources;
 
   /** Shared registry for named factories and runtime capabilities. */
   public readonly registry = new Registry();
@@ -49,7 +53,9 @@ export class Map {
       overlays: options.overlays ?? [],
     });
     this.layers = new Layers(this.native);
+    this.sources = new Sources(this.native, this.layers);
     this.bindLayerEvents();
+    this.bindSourceEvents();
   }
 
   /** Register a typed map event listener. */
@@ -163,6 +169,18 @@ export class Map {
   /** Activate one basemap and hide other basemaps. */
   public setBasemap(layerOrId: BaseLayer | string): this {
     this.layers.setBasemap(layerOrId);
+    return this;
+  }
+
+  /** Refresh the native source owned by a managed layer. */
+  public refreshLayer(layerOrId: BaseLayer | string): this {
+    this.sources.refresh(layerOrId);
+    return this;
+  }
+
+  /** Fit the map view to the best known layer or source extent. */
+  public fitLayer(layerOrId: BaseLayer | string, options: LayerFitOptions = {}): this {
+    this.sources.fit(layerOrId, options);
     return this;
   }
 
@@ -286,6 +304,7 @@ export class Map {
     }
 
     this.registry.clear();
+    this.sources.destroy();
     this.layers.destroy();
     this.native.setTarget(undefined);
     this.native.dispose();
@@ -317,6 +336,14 @@ export class Map {
     this.layers.on('order', event => this.events.emit('layer:order', event));
     this.layers.on('metadata', event => this.events.emit('layer:metadata', event));
     this.layers.on('basemap', event => this.events.emit('basemap:change', event));
+  }
+
+  private bindSourceEvents(): void {
+    this.sources.on('source', event => this.events.emit('layer:source', event));
+    this.sources.on('state', event => this.events.emit('layer:source-state', event));
+    this.sources.on('loadstart', event => this.events.emit('layer:loadstart', event));
+    this.sources.on('loadend', event => this.events.emit('layer:loadend', event));
+    this.sources.on('loaderror', event => this.events.emit('layer:loaderror', event));
   }
 
   private createPluginContext(scope: Scope): PluginContext {

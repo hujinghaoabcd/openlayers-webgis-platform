@@ -4,6 +4,7 @@ import {projectMeta} from '@omap/project-meta';
 import BasicMap from './examples/BasicMap.vue';
 import CoreRuntime from './examples/CoreRuntime.vue';
 import LayerManagement from './examples/LayerManagement.vue';
+import LayerSources from './examples/LayerSources.vue';
 import PlannedExample from './examples/PlannedExample.vue';
 import {exampleCatalog} from './catalog';
 
@@ -32,6 +33,7 @@ const filtered = computed(() => {
         <BasicMap v-if="selected.id==='map-basic-osm'" />
         <CoreRuntime v-else-if="selected.id==='core-runtime'" />
         <LayerManagement v-else-if="selected.id==='layer-management'" />
+        <LayerSources v-else-if="selected.id==='layer-sources'" />
         <PlannedExample v-else :title="selected.title" :description="selected.description" />
       </section>
     </main>
