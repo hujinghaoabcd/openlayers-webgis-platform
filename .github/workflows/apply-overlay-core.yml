@@ -1,4 +1,4 @@
-name: Apply overlay core
+name: Clean overlay temporary files
 
 on:
   push:
@@ -9,23 +9,25 @@ permissions:
   contents: write
 
 jobs:
-  apply:
+  clean:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           ref: agent/overlay-core
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: node scripts/patch-map-overlays.mjs
-      - name: Commit generated overlay fix
+      - name: Remove temporary assets
+        run: |
+          rm -f .github/workflows/apply-overlay-core.yml
+          rm -f .github/workflows/overlay-diagnostics.yml
+          rm -f .github/workflows/update-overlay-lock.yml
+          rm -f scripts/patch-map-overlays.mjs
+      - name: Commit cleanup
         run: |
           if git diff --quiet; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add packages/widgets/src/overlays.ts
-          git commit -m "fix: normalize polygon overlay anchors"
+          git add -A
+          git commit -m "chore: remove temporary overlay workflows"
           git push
