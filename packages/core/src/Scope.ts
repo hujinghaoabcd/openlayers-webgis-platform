@@ -6,6 +6,7 @@ import type BaseLayer from 'ol/layer/Base.js';
 import type Overlay from 'ol/Overlay.js';
 import type {ControlOptions} from './Controls.js';
 import type {EventListener} from './events.js';
+import type {InteractionOptions} from './Interactions.js';
 import type {LayerOptions} from './Layers.js';
 import type {Map} from './Map.js';
 import type {Registry, RegistryEventMap} from './Registry.js';
@@ -59,9 +60,12 @@ export class Scope {
   }
 
   /** Add an interaction and remove it automatically with the scope. */
-  public addInteraction<TInteraction extends Interaction>(interaction: TInteraction): TInteraction {
+  public addInteraction<TInteraction extends Interaction>(
+    interaction: TInteraction,
+    options: InteractionOptions = {},
+  ): TInteraction {
     this.assertActive();
-    this.map.addInteraction(interaction);
+    this.map.addInteraction(interaction, options);
     this.add(() => {
       this.map.removeInteraction(interaction);
     });

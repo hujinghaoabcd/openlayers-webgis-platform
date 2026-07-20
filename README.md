@@ -39,8 +39,13 @@ pnpm validate
 
 ```ts
 import View from 'ol/View.js';
+import VectorSource from 'ol/source/Vector.js';
 import {map} from '@omap/core';
 import {createScaleLineControl} from '@omap/controls';
+import {
+  createDrawInteraction,
+  createSnapInteraction,
+} from '@omap/interactions';
 import {createOsmLayer, createWktLayer} from '@omap/layers';
 
 const viewer = map('map', {
@@ -57,24 +62,32 @@ const area = createWktLayer({
   featureProjection: 'EPSG:3857',
 });
 
-viewer.addLayer(area);
+const sketches = new VectorSource();
+
+viewer
+  .addLayer(area)
+  .addInteraction(createDrawInteraction({source: sketches, type: 'Polygon'}))
+  .addInteraction(createSnapInteraction({source: sketches}));
+
 viewer.fitLayer('area', {padding: [40, 40, 40, 40]});
 viewer.disableControl('scale-line');
 viewer.enableControl('scale-line');
+viewer.activateInteraction('draw');
 
 console.log(viewer.sources.info('area'));
 console.log(viewer.controls.info('scale-line'));
+console.log(viewer.interactions.info('draw'));
 viewer.native.renderSync();
 await viewer.remove();
 ```
 
 ## 仓库入口
 
-- `packages/core`：`Map`、`map()`、事件、Layers、Sources、Controls、Scope、Registry 和插件内核
+- `packages/core`：`Map`、`map()`、事件、Layers、Sources、Controls、Interactions、Scope、Registry 和插件内核
 - `packages/config`：版本化配置契约与校验
 - `packages/layers`：图层工厂、数据源、格式和样式能力
 - `packages/controls`：原生控件工厂、元数据和控件扩展
-- `packages/interactions`：绘制、编辑、选择和历史命令
+- `packages/interactions`：原生交互工厂、激活状态、互斥组和历史命令
 - `packages/services`：服务客户端、请求管线和任务契约
 - `packages/analysis`：客户端、Worker 和远程空间分析
 - `packages/visualization`：专题渲染、动画和图表覆盖物

@@ -10,6 +10,7 @@
     "@omap/core": "workspace:*",
     "@omap/controls": "workspace:*",
     "@omap/example-kit": "workspace:*",
+    "@omap/interactions": "workspace:*",
     "@omap/layers": "workspace:*",
     "@omap/project-meta": "workspace:*",
     "@omap/vue": "workspace:*",

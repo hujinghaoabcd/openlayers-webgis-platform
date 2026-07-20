@@ -25,7 +25,19 @@ export type {
   ControlPosition,
   ControlsEventMap,
 } from './Controls.js';
+export {
+  configureInteraction,
+  getInteractionId,
+  INTERACTION_PROPERTY,
+  Interactions,
+} from './Interactions.js';
 export type {EventListener, EventName} from './events.js';
+export type {
+  InteractionInfo,
+  InteractionMetadata,
+  InteractionOptions,
+  InteractionsEventMap,
+} from './Interactions.js';
 export type {
   LayerInfo,
   LayerKind,
