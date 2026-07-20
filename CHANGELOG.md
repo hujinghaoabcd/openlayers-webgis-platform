@@ -22,3 +22,7 @@
 - Exclusive interaction groups with automatic peer deactivation.
 - Typed interaction lifecycle, active-state, metadata and order events.
 - Select, Draw, Modify, Translate, Snap, DragBox, Extent and DragAndDrop interaction factories.
+- Asynchronous `map.history` with execute, record, undo, redo, clear and configurable limits.
+- Typed command-history execution, recording, state-change and error events.
+- Reversible feature add, remove and geometry snapshot commands.
+- Native Draw, Modify and Translate history recording through `bindFeatureHistory()`.

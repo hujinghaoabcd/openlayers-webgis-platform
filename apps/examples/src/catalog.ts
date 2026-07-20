@@ -48,12 +48,18 @@ export const exampleCatalog: ExampleDefinition[] = [
   },
   {
     id: 'interaction-management',
-    title: '交互管理与绘制编辑',
+    title: '交互管理、绘制编辑与撤销重做',
     category: '交互核心',
-    description: '通过互斥组切换选择、绘制、修改和平移，并保持捕捉交互并行运行。',
-    tags: ['Interactions', 'Draw', 'Modify', 'Translate', 'Snap'],
+    description: '切换选择、绘制、修改和平移工具，并对绘制、删除和几何编辑执行撤销重做。',
+    tags: ['Interactions', 'Draw', 'Modify', 'Translate', 'Snap', 'Undo', 'Redo'],
     sourcePath: 'src/examples/InteractionManagement.vue',
-    capabilities: ['interaction.collection', 'interaction.exclusive', 'interaction.factories'],
+    capabilities: [
+      'interaction.collection',
+      'interaction.exclusive',
+      'interaction.factories',
+      'history.commands',
+      'history.features',
+    ],
   },
   {
     id: 'planned-ogc',

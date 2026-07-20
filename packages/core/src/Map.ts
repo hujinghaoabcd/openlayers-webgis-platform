@@ -8,6 +8,7 @@ import type BaseLayer from 'ol/layer/Base.js';
 import type Overlay from 'ol/Overlay.js';
 import {Controls, type ControlOptions} from './Controls.js';
 import {Events, type EventListener} from './events.js';
+import {History, type Command} from './History.js';
 import {Interactions, type InteractionOptions} from './Interactions.js';
 import {Layers, type LayerOptions} from './Layers.js';
 import {Registry} from './Registry.js';
@@ -23,8 +24,8 @@ interface InstalledPlugin {
 /**
  * The primary OMap map object.
  *
- * OMap adds a concise lifecycle, events, managed layers, sources, controls and
- * interactions, scopes, registry and plugins while keeping the underlying OpenLayers map
+ * OMap adds a concise lifecycle, events, managed layers, sources, controls,
+ * interactions and history, scopes, registry and plugins while keeping the underlying OpenLayers map
  * available through {@link native}.
  */
 export class Map {
@@ -42,6 +43,9 @@ export class Map {
 
   /** Managed interaction collection backed by the native OpenLayers collection. */
   public readonly interactions: Interactions;
+
+  /** Reversible command history for editing and application actions. */
+  public readonly history: History;
 
   /** Shared registry for named factories and runtime capabilities. */
   public readonly registry = new Registry();
@@ -64,10 +68,12 @@ export class Map {
     this.sources = new Sources(this.native, this.layers);
     this.controls = new Controls(this.native);
     this.interactions = new Interactions(this.native);
+    this.history = new History(options.history);
     this.bindLayerEvents();
     this.bindSourceEvents();
     this.bindControlEvents();
     this.bindInteractionEvents();
+    this.bindHistoryEvents();
   }
 
   /** Register a typed map event listener. */
@@ -268,6 +274,24 @@ export class Map {
     return this;
   }
 
+  /** Execute and record one reversible command. */
+  public execute<TResult>(command: Command<TResult>): Promise<TResult> {
+    this.assertActive();
+    return this.history.execute(command);
+  }
+
+  /** Undo the most recent reversible command. */
+  public undo(): Promise<boolean> {
+    this.assertActive();
+    return this.history.undo();
+  }
+
+  /** Redo the most recently undone command. */
+  public redo(): Promise<boolean> {
+    this.assertActive();
+    return this.history.redo();
+  }
+
   /** Add an overlay to the map. */
   public addOverlay(overlay: Overlay): this {
     this.assertActive();
@@ -355,6 +379,12 @@ export class Map {
       }
     }
 
+    try {
+      await this.history.destroy();
+    } catch (error) {
+      errors.push(error);
+    }
+
     this.registry.clear();
     this.interactions.destroy();
     this.controls.destroy();
@@ -414,6 +444,16 @@ export class Map {
     this.interactions.on('active', event => this.events.emit('interaction:active', event));
     this.interactions.on('order', event => this.events.emit('interaction:order', event));
     this.interactions.on('metadata', event => this.events.emit('interaction:metadata', event));
+  }
+
+  private bindHistoryEvents(): void {
+    this.history.on('execute', event => this.events.emit('history:execute', event));
+    this.history.on('record', event => this.events.emit('history:record', event));
+    this.history.on('undo', event => this.events.emit('history:undo', event));
+    this.history.on('redo', event => this.events.emit('history:redo', event));
+    this.history.on('clear', event => this.events.emit('history:clear', event));
+    this.history.on('change', event => this.events.emit('history:change', event));
+    this.history.on('error', event => this.events.emit('history:error', event));
   }
 
   private createPluginContext(scope: Scope): PluginContext {

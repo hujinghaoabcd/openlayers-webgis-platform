@@ -5,6 +5,7 @@ import type Interaction from 'ol/interaction/Interaction.js';
 import type BaseLayer from 'ol/layer/Base.js';
 import type Overlay from 'ol/Overlay.js';
 import type {ControlsEventMap} from './Controls.js';
+import type {HistoryEventMap, HistoryOptions} from './History.js';
 import type {InteractionsEventMap} from './Interactions.js';
 import type {LayersEventMap} from './Layers.js';
 import type {Map as OMap} from './Map.js';
@@ -23,6 +24,7 @@ export interface MapOptions {
   controls?: Control[];
   interactions?: Interaction[];
   overlays?: Overlay[];
+  history?: HistoryOptions;
 }
 
 /** Built-in events emitted by an OMap map. */
@@ -52,6 +54,13 @@ export interface MapEventMap {
   'interaction:active': InteractionsEventMap['active'];
   'interaction:order': InteractionsEventMap['order'];
   'interaction:metadata': InteractionsEventMap['metadata'];
+  'history:execute': HistoryEventMap['execute'];
+  'history:record': HistoryEventMap['record'];
+  'history:undo': HistoryEventMap['undo'];
+  'history:redo': HistoryEventMap['redo'];
+  'history:clear': HistoryEventMap['clear'];
+  'history:change': HistoryEventMap['change'];
+  'history:error': HistoryEventMap['error'];
   'overlay:add': {readonly overlay: Overlay};
   'overlay:remove': {readonly overlay: Overlay};
   'plugin:install': {readonly plugin: Plugin};

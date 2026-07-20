@@ -1,6 +1,6 @@
 # OMap
 
-OMap 是一个基于 OpenLayers 构建的模块化二维 WebGIS 开发库。项目提供简洁的地图入口、原生 OpenLayers 访问、图层、控件、交互、服务、空间分析、专题可视化、Widget 和 Vue 组件。
+OMap 是一个基于 OpenLayers 构建的模块化二维 WebGIS 开发库。项目提供简洁的地图入口、原生 OpenLayers 访问、图层、控件、交互、命令历史、服务、空间分析、专题可视化、Widget 和 Vue 组件。
 
 > 当前状态：核心库第一阶段开发中。所有公开能力均在本仓库内独立设计、实现、测试和维护。
 
@@ -43,13 +43,25 @@ import VectorSource from 'ol/source/Vector.js';
 import {map} from '@omap/core';
 import {createScaleLineControl} from '@omap/controls';
 import {
+  bindFeatureHistory,
   createDrawInteraction,
+  createModifyInteraction,
   createSnapInteraction,
 } from '@omap/interactions';
-import {createOsmLayer, createWktLayer} from '@omap/layers';
+import {
+  createOsmLayer,
+  createVectorLayer,
+  createWktLayer,
+} from '@omap/layers';
+
+const sketches = new VectorSource();
+const sketchLayer = createVectorLayer({
+  id: 'sketches',
+  source: sketches,
+});
 
 const viewer = map('map', {
-  layers: [createOsmLayer({id: 'standard'})],
+  layers: [createOsmLayer({id: 'standard'}), sketchLayer],
   controls: [createScaleLineControl({bar: true})],
   view: new View({center: [0, 0], zoom: 2}),
 });
@@ -62,32 +74,46 @@ const area = createWktLayer({
   featureProjection: 'EPSG:3857',
 });
 
-const sketches = new VectorSource();
+const draw = createDrawInteraction({source: sketches, type: 'Polygon'});
+const modify = createModifyInteraction({source: sketches});
+const snap = createSnapInteraction({source: sketches});
 
 viewer
   .addLayer(area)
-  .addInteraction(createDrawInteraction({source: sketches, type: 'Polygon'}))
-  .addInteraction(createSnapInteraction({source: sketches}));
+  .addInteraction(draw)
+  .addInteraction(modify)
+  .addInteraction(snap);
+
+const unbindHistory = bindFeatureHistory({
+  history: viewer.history,
+  source: sketches,
+  draw,
+  modify,
+});
 
 viewer.fitLayer('area', {padding: [40, 40, 40, 40]});
-viewer.disableControl('scale-line');
-viewer.enableControl('scale-line');
 viewer.activateInteraction('draw');
+
+await viewer.undo();
+await viewer.redo();
 
 console.log(viewer.sources.info('area'));
 console.log(viewer.controls.info('scale-line'));
 console.log(viewer.interactions.info('draw'));
+console.log(viewer.history.state());
 viewer.native.renderSync();
+
+unbindHistory();
 await viewer.remove();
 ```
 
 ## 仓库入口
 
-- `packages/core`：`Map`、`map()`、事件、Layers、Sources、Controls、Interactions、Scope、Registry 和插件内核
+- `packages/core`：`Map`、`map()`、事件、Layers、Sources、Controls、Interactions、History、Scope、Registry 和插件内核
 - `packages/config`：版本化配置契约与校验
 - `packages/layers`：图层工厂、数据源、格式和样式能力
 - `packages/controls`：原生控件工厂、元数据和控件扩展
-- `packages/interactions`：原生交互工厂、激活状态、互斥组和历史命令
+- `packages/interactions`：原生交互工厂、互斥组、要素命令和编辑历史绑定
 - `packages/services`：服务客户端、请求管线和任务契约
 - `packages/analysis`：客户端、Worker 和远程空间分析
 - `packages/visualization`：专题渲染、动画和图表覆盖物
