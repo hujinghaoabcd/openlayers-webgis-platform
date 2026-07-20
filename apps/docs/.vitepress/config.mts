@@ -27,6 +27,7 @@ export default defineConfig({
           {text: '控件核心', link: '/architecture/controls'},
           {text: '交互核心', link: '/architecture/interactions'},
           {text: '命令历史', link: '/architecture/history'},
+          {text: 'Overlay 与 Popup', link: '/architecture/overlays'},
           {text: '插件边界', link: '/architecture/plugins'},
         ]},
       ],

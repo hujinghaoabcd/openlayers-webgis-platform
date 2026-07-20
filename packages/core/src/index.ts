@@ -16,6 +16,12 @@ export {
   LAYER_PROPERTY,
   Layers,
 } from './Layers.js';
+export {
+  configureOverlay,
+  getOverlayId,
+  OVERLAY_PROPERTY,
+  Overlays,
+} from './Overlays.js';
 export {Registry} from './Registry.js';
 export {Scope} from './Scope.js';
 export {Sources} from './Sources.js';
@@ -54,6 +60,13 @@ export type {
   LayerOptions,
   LayersEventMap,
 } from './Layers.js';
+export type {
+  ManagedOverlayOptions,
+  OverlayInfo,
+  OverlayMetadata,
+  OverlayPositioning,
+  OverlaysEventMap,
+} from './Overlays.js';
 export type {
   RegisterOptions,
   RegistryEntry,

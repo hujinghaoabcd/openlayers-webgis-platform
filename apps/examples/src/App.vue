@@ -7,6 +7,7 @@ import CoreRuntime from './examples/CoreRuntime.vue';
 import InteractionManagement from './examples/InteractionManagement.vue';
 import LayerManagement from './examples/LayerManagement.vue';
 import LayerSources from './examples/LayerSources.vue';
+import OverlayManagement from './examples/OverlayManagement.vue';
 import PlannedExample from './examples/PlannedExample.vue';
 import {exampleCatalog} from './catalog';
 
@@ -38,6 +39,7 @@ const filtered = computed(() => {
         <LayerSources v-else-if="selected.id==='layer-sources'" />
         <ControlManagement v-else-if="selected.id==='control-management'" />
         <InteractionManagement v-else-if="selected.id==='interaction-management'" />
+        <OverlayManagement v-else-if="selected.id==='overlay-management'" />
         <PlannedExample v-else :title="selected.title" :description="selected.description" />
       </section>
     </main>

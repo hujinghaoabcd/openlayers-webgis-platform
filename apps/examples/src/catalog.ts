@@ -62,6 +62,15 @@ export const exampleCatalog: ExampleDefinition[] = [
     ],
   },
   {
+    id: 'overlay-management',
+    title: 'Overlay、Popup 与 Marker',
+    category: '覆盖物核心',
+    description: '按 ID 管理原生 Overlay，并演示 Marker 定位、Popup 生命周期、显隐与自动平移。',
+    tags: ['Overlay', 'Popup', 'Marker', 'AutoPan'],
+    sourcePath: 'src/examples/OverlayManagement.vue',
+    capabilities: ['overlay.collection', 'overlay.popup', 'overlay.marker', 'overlay.autopan'],
+  },
+  {
     id: 'planned-ogc',
     title: 'OGC 服务接入（规划）',
     category: '地图服务',
