@@ -35,6 +35,8 @@ map.native.getOverlays();
 
 原生集合的添加和移除会同步到 `map.overlays`。直接调用 `overlay.setPosition()`、`setOffset()`、`setPositioning()` 或 `setElement()` 也会进入 OMap 事件系统。
 
+受管 API 与原生 API 可以混合使用，但稳定 ID、显隐状态和业务元数据应优先通过 `map.overlays` 配置，以便插件、示例和应用工具栏读取一致状态。
+
 ## 显隐与坐标分离
 
 ```ts
