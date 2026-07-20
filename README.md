@@ -40,20 +40,26 @@ pnpm validate
 ```ts
 import View from 'ol/View.js';
 import {map} from '@omap/core';
-import {createOsmLayer} from '@omap/layers';
+import {createGeoJsonLayer, createOsmLayer} from '@omap/layers';
 
 const viewer = map('map', {
-  layers: [createOsmLayer()],
+  layers: [createOsmLayer({id: 'standard'})],
   view: new View({center: [0, 0], zoom: 2}),
 });
 
-viewer.on('layer:add', ({layer}) => {
-  console.log(layer);
+const roads = createGeoJsonLayer(
+  {type: 'FeatureCollection', features: []},
+  {id: 'roads', title: 'Road network'},
+);
+
+viewer.on('layer:visibility', ({id, visible}) => {
+  console.log(id, visible);
 });
 
-const scope = viewer.scope('example');
-scope.addLayer(layer);
-viewer.registry.register('layer', 'example', () => layer);
+viewer.addLayer(roads);
+viewer.hideLayer('roads');
+viewer.setLayerOpacity('roads', 0.6);
+viewer.setBasemap('standard');
 
 viewer.native.renderSync();
 await viewer.remove();
@@ -61,9 +67,9 @@ await viewer.remove();
 
 ## 仓库入口
 
-- `packages/core`：`Map`、`map()`、事件、Scope、Registry 和插件内核
+- `packages/core`：`Map`、`map()`、事件、Layers、Scope、Registry 和插件内核
 - `packages/config`：版本化配置契约与校验
-- `packages/layers`：图层、数据源、格式和样式能力
+- `packages/layers`：图层工厂、数据源、格式和样式能力
 - `packages/controls`：地图控件与工具条能力
 - `packages/interactions`：绘制、编辑、选择和历史命令
 - `packages/services`：服务客户端、请求管线和任务契约

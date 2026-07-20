@@ -7,6 +7,7 @@ import {defaults as defaultInteractions} from 'ol/interaction/defaults.js';
 import type BaseLayer from 'ol/layer/Base.js';
 import type Overlay from 'ol/Overlay.js';
 import {Events, type EventListener} from './events.js';
+import {Layers, type LayerOptions} from './Layers.js';
 import {Registry} from './Registry.js';
 import {Scope} from './Scope.js';
 import type {MapEventMap, MapOptions, MapTarget, Plugin, PluginContext} from './types.js';
@@ -19,12 +20,16 @@ interface InstalledPlugin {
 /**
  * The primary OMap map object.
  *
- * OMap adds a concise lifecycle, events, scopes, registry and plugins while
- * keeping the underlying OpenLayers map available through {@link native}.
+ * OMap adds a concise lifecycle, events, managed layers, scopes, registry and
+ * plugins while keeping the underlying OpenLayers map available through
+ * {@link native}.
  */
 export class Map {
   /** The underlying OpenLayers map. */
   public readonly native: OlMap;
+
+  /** Managed layer collection backed by the native OpenLayers collection. */
+  public readonly layers: Layers;
 
   /** Shared registry for named factories and runtime capabilities. */
   public readonly registry = new Registry();
@@ -43,6 +48,8 @@ export class Map {
       interactions: options.interactions ?? defaultInteractions().getArray(),
       overlays: options.overlays ?? [],
     });
+    this.layers = new Layers(this.native);
+    this.bindLayerEvents();
   }
 
   /** Register a typed map event listener. */
@@ -65,13 +72,9 @@ export class Map {
     type?: K,
     listener?: EventListener<MapEventMap[K]>,
   ): this {
-    if (type === undefined) {
-      this.events.off();
-    } else if (listener === undefined) {
-      this.events.off(type);
-    } else {
-      this.events.off(type, listener);
-    }
+    if (type === undefined) this.events.off();
+    else if (listener === undefined) this.events.off(type);
+    else this.events.off(type, listener);
     return this;
   }
 
@@ -92,9 +95,7 @@ export class Map {
   public setTarget(target?: MapTarget): this {
     this.assertActive();
     this.native.setTarget(target);
-    if (target !== undefined) {
-      this.native.updateSize();
-    }
+    if (target !== undefined) this.native.updateSize();
     this.events.emit('target:change', {target});
     return this;
   }
@@ -118,22 +119,51 @@ export class Map {
     return this;
   }
 
-  /** Add a layer to the map. */
-  public addLayer(layer: BaseLayer): this {
+  /** Add a layer through the managed layer collection. */
+  public addLayer(layer: BaseLayer, options: LayerOptions = {}): this {
     this.assertActive();
-    this.native.addLayer(layer);
-    this.events.emit('layer:add', {layer});
+    this.layers.add(layer, options);
     return this;
   }
 
-  /** Remove a layer from the map. */
-  public removeLayer(layer: BaseLayer): BaseLayer | undefined {
+  /** Remove a layer by object or stable id. */
+  public removeLayer(layerOrId: BaseLayer | string): BaseLayer | undefined {
     this.assertActive();
-    const removed = this.native.removeLayer(layer);
-    if (removed) {
-      this.events.emit('layer:remove', {layer: removed});
-    }
-    return removed;
+    return this.layers.remove(layerOrId);
+  }
+
+  /** Return a managed layer by stable id. */
+  public getLayer<TLayer extends BaseLayer = BaseLayer>(id: string): TLayer | undefined {
+    return this.layers.get<TLayer>(id);
+  }
+
+  /** Return whether a managed layer id or object exists. */
+  public hasLayer(layerOrId: BaseLayer | string): boolean {
+    return this.layers.has(layerOrId);
+  }
+
+  /** Show a managed layer. */
+  public showLayer(layerOrId: BaseLayer | string): this {
+    this.layers.show(layerOrId);
+    return this;
+  }
+
+  /** Hide a managed layer. */
+  public hideLayer(layerOrId: BaseLayer | string): this {
+    this.layers.hide(layerOrId);
+    return this;
+  }
+
+  /** Set managed layer opacity. */
+  public setLayerOpacity(layerOrId: BaseLayer | string, opacity: number): this {
+    this.layers.setOpacity(layerOrId, opacity);
+    return this;
+  }
+
+  /** Activate one basemap and hide other basemaps. */
+  public setBasemap(layerOrId: BaseLayer | string): this {
+    this.layers.setBasemap(layerOrId);
+    return this;
   }
 
   /** Add a control to the map. */
@@ -148,9 +178,7 @@ export class Map {
   public removeControl(control: Control): Control | undefined {
     this.assertActive();
     const removed = this.native.removeControl(control);
-    if (removed) {
-      this.events.emit('control:remove', {control: removed});
-    }
+    if (removed) this.events.emit('control:remove', {control: removed});
     return removed;
   }
 
@@ -166,9 +194,7 @@ export class Map {
   public removeInteraction(interaction: Interaction): Interaction | undefined {
     this.assertActive();
     const removed = this.native.removeInteraction(interaction);
-    if (removed) {
-      this.events.emit('interaction:remove', {interaction: removed});
-    }
+    if (removed) this.events.emit('interaction:remove', {interaction: removed});
     return removed;
   }
 
@@ -184,23 +210,14 @@ export class Map {
   public removeOverlay(overlay: Overlay): Overlay | undefined {
     this.assertActive();
     const removed = this.native.removeOverlay(overlay);
-    if (removed) {
-      this.events.emit('overlay:remove', {overlay: removed});
-    }
+    if (removed) this.events.emit('overlay:remove', {overlay: removed});
     return removed;
   }
 
-  /**
-   * Install a plugin once.
-   *
-   * Every plugin receives its own scope. A failed installation automatically
-   * disposes resources already registered by that plugin.
-   */
+  /** Install a plugin once with automatic rollback on failure. */
   public async use(plugin: Plugin): Promise<this> {
     this.assertActive();
-    if (this.plugins.has(plugin.id)) {
-      return this;
-    }
+    if (this.plugins.has(plugin.id)) return this;
 
     const scope = this.scope(`plugin:${plugin.id}`);
     const context = this.createPluginContext(scope);
@@ -237,9 +254,7 @@ export class Map {
 
   /** Remove the map and release plugins, scopes and OpenLayers resources. */
   public async remove(): Promise<void> {
-    if (this.removed) {
-      return;
-    }
+    if (this.removed) return;
 
     const errors: unknown[] = [];
     for (const installed of [...this.plugins.values()].reverse()) {
@@ -249,7 +264,6 @@ export class Map {
       } catch (error) {
         errors.push(error);
       }
-
       try {
         await installed.scope.dispose();
       } catch (error) {
@@ -272,6 +286,7 @@ export class Map {
     }
 
     this.registry.clear();
+    this.layers.destroy();
     this.native.setTarget(undefined);
     this.native.dispose();
     this.removed = true;
@@ -293,13 +308,22 @@ export class Map {
     return this.removed;
   }
 
+  private bindLayerEvents(): void {
+    this.layers.on('add', ({layer}) => this.events.emit('layer:add', {layer}));
+    this.layers.on('remove', ({layer}) => this.events.emit('layer:remove', {layer}));
+    this.layers.on('visibility', event => this.events.emit('layer:visibility', event));
+    this.layers.on('opacity', event => this.events.emit('layer:opacity', event));
+    this.layers.on('zIndex', event => this.events.emit('layer:zIndex', event));
+    this.layers.on('order', event => this.events.emit('layer:order', event));
+    this.layers.on('metadata', event => this.events.emit('layer:metadata', event));
+    this.layers.on('basemap', event => this.events.emit('basemap:change', event));
+  }
+
   private createPluginContext(scope: Scope): PluginContext {
     return {map: this, native: this.native, scope, registry: this.registry};
   }
 
   private assertActive(): void {
-    if (this.removed) {
-      throw new Error('Map has already been removed.');
-    }
+    if (this.removed) throw new Error('Map has already been removed.');
   }
 }
